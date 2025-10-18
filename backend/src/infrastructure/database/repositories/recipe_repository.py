@@ -29,14 +29,23 @@ class RecipeRepository(IRecipeRepository):
 
     async def get_by_id(self, entity_id: UUID) -> Optional[Recipe]:
         """Get recipe by ID."""
-        stmt = select(RecipeModel).where(RecipeModel.id == entity_id)
+        stmt = (
+            select(RecipeModel)
+            .where(RecipeModel.id == entity_id)
+            .options(selectinload(RecipeModel.ingredients))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return RecipeMapper.to_entity(model) if model else None
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Recipe]:
         """Get all recipes with pagination."""
-        stmt = select(RecipeModel).offset(skip).limit(limit)
+        stmt = (
+            select(RecipeModel)
+            .options(selectinload(RecipeModel.ingredients))
+            .offset(skip)
+            .limit(limit)
+        )
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [RecipeMapper.to_entity(model) for model in models]
@@ -54,7 +63,11 @@ class RecipeRepository(IRecipeRepository):
 
     async def update(self, entity: Recipe) -> Recipe:
         """Update an existing recipe."""
-        stmt = select(RecipeModel).where(RecipeModel.id == entity.id)
+        stmt = (
+            select(RecipeModel)
+            .where(RecipeModel.id == entity.id)
+            .options(selectinload(RecipeModel.ingredients))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one()
 
@@ -64,7 +77,7 @@ class RecipeRepository(IRecipeRepository):
         model.updated_at = entity.updated_at
 
         await self._session.flush()
-        await self._session.refresh(model)
+        await self._session.refresh(model, ["ingredients"])
         return RecipeMapper.to_entity(model)
 
     async def delete(self, entity_id: UUID) -> bool:
@@ -87,7 +100,11 @@ class RecipeRepository(IRecipeRepository):
 
     async def get_by_name(self, name: str) -> Optional[Recipe]:
         """Get recipe by name."""
-        stmt = select(RecipeModel).where(RecipeModel.name == name)
+        stmt = (
+            select(RecipeModel)
+            .where(RecipeModel.name == name)
+            .options(selectinload(RecipeModel.ingredients))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return RecipeMapper.to_entity(model) if model else None

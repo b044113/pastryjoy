@@ -29,14 +29,23 @@ class OrderRepository(IOrderRepository):
 
     async def get_by_id(self, entity_id: UUID) -> Optional[Order]:
         """Get order by ID."""
-        stmt = select(OrderModel).where(OrderModel.id == entity_id)
+        stmt = (
+            select(OrderModel)
+            .where(OrderModel.id == entity_id)
+            .options(selectinload(OrderModel.items))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return OrderMapper.to_entity(model) if model else None
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Order]:
         """Get all orders with pagination."""
-        stmt = select(OrderModel).offset(skip).limit(limit)
+        stmt = (
+            select(OrderModel)
+            .options(selectinload(OrderModel.items))
+            .offset(skip)
+            .limit(limit)
+        )
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [OrderMapper.to_entity(model) for model in models]
@@ -54,7 +63,11 @@ class OrderRepository(IOrderRepository):
 
     async def update(self, entity: Order) -> Order:
         """Update an existing order."""
-        stmt = select(OrderModel).where(OrderModel.id == entity.id)
+        stmt = (
+            select(OrderModel)
+            .where(OrderModel.id == entity.id)
+            .options(selectinload(OrderModel.items))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one()
 
@@ -66,7 +79,7 @@ class OrderRepository(IOrderRepository):
         model.updated_at = entity.updated_at
 
         await self._session.flush()
-        await self._session.refresh(model)
+        await self._session.refresh(model, ["items"])
         return OrderMapper.to_entity(model)
 
     async def delete(self, entity_id: UUID) -> bool:

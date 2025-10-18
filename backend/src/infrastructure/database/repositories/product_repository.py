@@ -29,14 +29,23 @@ class ProductRepository(IProductRepository):
 
     async def get_by_id(self, entity_id: UUID) -> Optional[Product]:
         """Get product by ID."""
-        stmt = select(ProductModel).where(ProductModel.id == entity_id)
+        stmt = (
+            select(ProductModel)
+            .where(ProductModel.id == entity_id)
+            .options(selectinload(ProductModel.recipes))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return ProductMapper.to_entity(model) if model else None
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Product]:
         """Get all products with pagination."""
-        stmt = select(ProductModel).offset(skip).limit(limit)
+        stmt = (
+            select(ProductModel)
+            .options(selectinload(ProductModel.recipes))
+            .offset(skip)
+            .limit(limit)
+        )
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [ProductMapper.to_entity(model) for model in models]
@@ -54,7 +63,11 @@ class ProductRepository(IProductRepository):
 
     async def update(self, entity: Product) -> Product:
         """Update an existing product."""
-        stmt = select(ProductModel).where(ProductModel.id == entity.id)
+        stmt = (
+            select(ProductModel)
+            .where(ProductModel.id == entity.id)
+            .options(selectinload(ProductModel.recipes))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one()
 
@@ -68,7 +81,7 @@ class ProductRepository(IProductRepository):
         model.updated_at = entity.updated_at
 
         await self._session.flush()
-        await self._session.refresh(model)
+        await self._session.refresh(model, ["recipes"])
         return ProductMapper.to_entity(model)
 
     async def delete(self, entity_id: UUID) -> bool:
@@ -91,7 +104,11 @@ class ProductRepository(IProductRepository):
 
     async def get_by_name(self, name: str) -> Optional[Product]:
         """Get product by name."""
-        stmt = select(ProductModel).where(ProductModel.name == name)
+        stmt = (
+            select(ProductModel)
+            .where(ProductModel.name == name)
+            .options(selectinload(ProductModel.recipes))
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return ProductMapper.to_entity(model) if model else None

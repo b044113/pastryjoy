@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test:coverage -- --run)",
+      "Bash(npm install --save-dev @vitest/coverage-v8)",
+      "Bash(poetry run pytest tests/integration/test_recipe_repository.py -v)",
+      "Bash(poetry run pytest tests/integration/test_recipe_repository.py tests/integration/test_product_repository.py tests/integration/test_order_repository.py -v --tb=short)",
+      "Bash(npm run test -- --run src/pages/dashboard/DashboardPage.test.tsx src/pages/ingredients/IngredientsPage.test.tsx)",
+      "Bash(npm run test -- --run src/pages/dashboard/DashboardPage.test.tsx --reporter=verbose)",
+      "Bash(npm run test -- --run src/pages/recipes/RecipesPage.test.tsx)",
+      "Bash(npm run test -- --run src/pages/products/ProductsPage.test.tsx src/pages/orders/OrdersPage.test.tsx)",
+      "Bash(npm run test -- --run src/pages/products/ProductsPage.test.tsx)",
+      "Bash(npm run test -- --run src/pages/orders/OrdersPage.test.tsx)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
