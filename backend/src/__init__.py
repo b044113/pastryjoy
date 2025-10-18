@@ -1,0 +1,1 @@
+"""PastryJoy backend application."""
