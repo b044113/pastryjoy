@@ -215,6 +215,18 @@ async def update_product(
     if dto.profit_margin_percentage is not None:
         product.profit_margin_percentage = dto.profit_margin_percentage
 
+    # Update recipes if provided
+    if dto.recipes is not None:
+        # Clear existing recipes
+        product.recipes.clear()
+        # Add new recipes
+        for recipe_dto in dto.recipes:
+            product_recipe = ProductRecipe(
+                recipe_id=recipe_dto.recipe_id,
+                quantity=recipe_dto.quantity,
+            )
+            product.recipes.append(product_recipe)
+
     # Save changes
     updated = await repo.update(product)
 

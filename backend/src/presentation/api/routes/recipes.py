@@ -15,10 +15,18 @@ from src.domain.entities.recipe import Recipe
 from src.domain.entities.recipe_ingredient import RecipeIngredient
 from src.domain.entities.user import User
 from src.infrastructure.database.repositories.recipe_repository import RecipeRepository
+from src.infrastructure.database.repositories.ingredient_repository import IngredientRepository
 from src.infrastructure.database.session import get_db
 from src.presentation.api.dependencies import get_current_user, require_admin
 
 router = APIRouter()
+
+
+async def get_ingredient_names_map(session: AsyncSession) -> dict[UUID, str]:
+    """Get a mapping of ingredient IDs to names."""
+    ingredient_repo = IngredientRepository(session)
+    ingredients = await ingredient_repo.get_all()
+    return {ing.id: ing.name for ing in ingredients}
 
 
 @router.post(
@@ -59,6 +67,9 @@ async def create_recipe(
     # Save to database
     created = await repo.create(recipe)
 
+    # Get ingredient names
+    ingredient_names = await get_ingredient_names_map(session)
+
     return RecipeResponseDTO(
         id=created.id,
         name=created.name,
@@ -67,7 +78,7 @@ async def create_recipe(
             RecipeIngredientResponseDTO(
                 id=ing.id,
                 ingredient_id=ing.ingredient_id,
-                ingredient_name=None,  # Would need to join with ingredients table
+                ingredient_name=ingredient_names.get(ing.ingredient_id),
                 quantity=ing.quantity,
             )
             for ing in created.ingredients
@@ -95,28 +106,44 @@ async def list_recipes(
     Returns:
         List of recipes
     """
-    repo = RecipeRepository(session)
-    recipes = await repo.get_all(skip, limit)
+    import logging
+    import traceback
+    logger = logging.getLogger(__name__)
 
-    return [
-        RecipeResponseDTO(
-            id=recipe.id,
-            name=recipe.name,
-            instructions=recipe.instructions,
-            ingredients=[
-                RecipeIngredientResponseDTO(
-                    id=ing.id,
-                    ingredient_id=ing.ingredient_id,
-                    ingredient_name=None,
-                    quantity=ing.quantity,
-                )
-                for ing in recipe.ingredients
-            ],
-            created_at=recipe.created_at,
-            updated_at=recipe.updated_at,
-        )
-        for recipe in recipes
-    ]
+    try:
+        logger.info(f"list_recipes called with skip={skip}, limit={limit}, user={current_user.username}")
+        repo = RecipeRepository(session)
+        recipes = await repo.get_all(skip, limit)
+        logger.info(f"Got {len(recipes)} recipes from repository")
+
+        # Get ingredient names
+        ingredient_names = await get_ingredient_names_map(session)
+
+        result = [
+            RecipeResponseDTO(
+                id=recipe.id,
+                name=recipe.name,
+                instructions=recipe.instructions,
+                ingredients=[
+                    RecipeIngredientResponseDTO(
+                        id=ing.id,
+                        ingredient_id=ing.ingredient_id,
+                        ingredient_name=ingredient_names.get(ing.ingredient_id),
+                        quantity=ing.quantity,
+                    )
+                    for ing in recipe.ingredients
+                ],
+                created_at=recipe.created_at,
+                updated_at=recipe.updated_at,
+            )
+            for recipe in recipes
+        ]
+        logger.info(f"Successfully created {len(result)} response DTOs")
+        return result
+    except Exception as e:
+        logger.error(f"Error in list_recipes: {type(e).__name__}: {e}")
+        logger.error(traceback.format_exc())
+        raise
 
 
 @router.get("/{recipe_id}", response_model=RecipeResponseDTO)
@@ -147,6 +174,9 @@ async def get_recipe(
             detail="Recipe not found",
         )
 
+    # Get ingredient names
+    ingredient_names = await get_ingredient_names_map(session)
+
     return RecipeResponseDTO(
         id=recipe.id,
         name=recipe.name,
@@ -155,7 +185,7 @@ async def get_recipe(
             RecipeIngredientResponseDTO(
                 id=ing.id,
                 ingredient_id=ing.ingredient_id,
-                ingredient_name=None,
+                ingredient_name=ingredient_names.get(ing.ingredient_id),
                 quantity=ing.quantity,
             )
             for ing in recipe.ingredients
@@ -204,6 +234,9 @@ async def update_recipe(
     # Save changes
     updated = await repo.update(recipe)
 
+    # Get ingredient names
+    ingredient_names = await get_ingredient_names_map(session)
+
     return RecipeResponseDTO(
         id=updated.id,
         name=updated.name,
@@ -212,7 +245,7 @@ async def update_recipe(
             RecipeIngredientResponseDTO(
                 id=ing.id,
                 ingredient_id=ing.ingredient_id,
-                ingredient_name=None,
+                ingredient_name=ingredient_names.get(ing.ingredient_id),
                 quantity=ing.quantity,
             )
             for ing in updated.ingredients

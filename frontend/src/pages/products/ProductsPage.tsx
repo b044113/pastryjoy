@@ -163,6 +163,7 @@ export const ProductsPage: React.FC = () => {
           fixed_costs: fixedCosts,
           variable_costs_percentage: variableCosts,
           profit_margin_percentage: profitMargin,
+          recipes: formData.recipes,
         });
       } else {
         await productService.create({

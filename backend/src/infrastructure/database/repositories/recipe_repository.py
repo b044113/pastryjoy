@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from src.domain.entities.recipe import Recipe
 from src.domain.repositories.recipe_repository import IRecipeRepository
 from src.infrastructure.database.mappers.recipe_mapper import RecipeMapper
-from src.infrastructure.database.models.recipe import RecipeModel
+from src.infrastructure.database.models.recipe import RecipeModel, RecipeIngredientModel
 
 
 class RecipeRepository(IRecipeRepository):
@@ -24,15 +24,23 @@ class RecipeRepository(IRecipeRepository):
         model = RecipeMapper.to_model(entity)
         self._session.add(model)
         await self._session.flush()
-        await self._session.refresh(model, ["ingredients"])
-        return RecipeMapper.to_entity(model)
+
+        # Reload with ingredients and their ingredient data
+        stmt = (
+            select(RecipeModel)
+            .where(RecipeModel.id == model.id)
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
+        )
+        result = await self._session.execute(stmt)
+        refreshed_model = result.scalar_one()
+        return RecipeMapper.to_entity(refreshed_model)
 
     async def get_by_id(self, entity_id: UUID) -> Optional[Recipe]:
         """Get recipe by ID."""
         stmt = (
             select(RecipeModel)
             .where(RecipeModel.id == entity_id)
-            .options(selectinload(RecipeModel.ingredients))
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -42,7 +50,7 @@ class RecipeRepository(IRecipeRepository):
         """Get all recipes with pagination."""
         stmt = (
             select(RecipeModel)
-            .options(selectinload(RecipeModel.ingredients))
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
             .offset(skip)
             .limit(limit)
         )
@@ -55,7 +63,7 @@ class RecipeRepository(IRecipeRepository):
         stmt = (
             select(RecipeModel)
             .where(RecipeModel.id == recipe_id)
-            .options(selectinload(RecipeModel.ingredients))
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -66,7 +74,7 @@ class RecipeRepository(IRecipeRepository):
         stmt = (
             select(RecipeModel)
             .where(RecipeModel.id == entity.id)
-            .options(selectinload(RecipeModel.ingredients))
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one()
@@ -77,8 +85,16 @@ class RecipeRepository(IRecipeRepository):
         model.updated_at = entity.updated_at
 
         await self._session.flush()
-        await self._session.refresh(model, ["ingredients"])
-        return RecipeMapper.to_entity(model)
+
+        # Reload with ingredients and their ingredient data
+        stmt_refresh = (
+            select(RecipeModel)
+            .where(RecipeModel.id == entity.id)
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
+        )
+        result_refresh = await self._session.execute(stmt_refresh)
+        refreshed_model = result_refresh.scalar_one()
+        return RecipeMapper.to_entity(refreshed_model)
 
     async def delete(self, entity_id: UUID) -> bool:
         """Delete a recipe by ID."""
@@ -103,7 +119,7 @@ class RecipeRepository(IRecipeRepository):
         stmt = (
             select(RecipeModel)
             .where(RecipeModel.name == name)
-            .options(selectinload(RecipeModel.ingredients))
+            .options(selectinload(RecipeModel.ingredients).selectinload(RecipeIngredientModel.ingredient))
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()

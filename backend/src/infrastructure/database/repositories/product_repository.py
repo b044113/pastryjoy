@@ -63,6 +63,9 @@ class ProductRepository(IProductRepository):
 
     async def update(self, entity: Product) -> Product:
         """Update an existing product."""
+        from src.infrastructure.database.models.product import ProductRecipeModel
+        from src.infrastructure.database.mappers.product_mapper import ProductRecipeMapper
+
         stmt = (
             select(ProductModel)
             .where(ProductModel.id == entity.id)
@@ -79,6 +82,14 @@ class ProductRepository(IProductRepository):
         model.variable_costs_percentage = entity.variable_costs_percentage
         model.profit_margin_percentage = entity.profit_margin_percentage
         model.updated_at = entity.updated_at
+
+        # Update recipes - clear and re-add
+        model.recipes.clear()
+        await self._session.flush()  # Flush to delete old associations
+
+        for recipe_entity in entity.recipes:
+            recipe_model = ProductRecipeMapper.to_model(recipe_entity, entity.id)
+            model.recipes.append(recipe_model)
 
         await self._session.flush()
         await self._session.refresh(model, ["recipes"])

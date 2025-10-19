@@ -32,6 +32,7 @@ class ProductUpdateDTO(BaseModel):
     fixed_costs: Decimal | None = Field(None, ge=0)
     variable_costs_percentage: Decimal | None = Field(None, ge=0, le=100)
     profit_margin_percentage: Decimal | None = Field(None, ge=0)
+    recipes: list[ProductRecipeDTO] | None = None
 
 
 class ProductRecipeResponseDTO(BaseModel):

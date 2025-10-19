@@ -117,7 +117,7 @@ class TestProductRepository:
 
         # Update name and cost
         created.name = "New Product Name"
-        created.update_price(Money(Decimal("8.00"), "USD"))
+        created.fixed_costs = Money(Decimal("8.00"), "USD")
         updated = await repo.update(created)
 
         assert updated.name == "New Product Name"
@@ -201,3 +201,110 @@ class TestProductRepository:
 
         assert created.variable_costs_percentage == Decimal("0.15")
         assert created.profit_margin_percentage == Decimal("0.25")
+
+    async def test_update_product_recipes(self, db_session: AsyncSession):
+        """Test updating product recipes - verifies bug fix for recipe persistence."""
+        repo = ProductRepository(db_session)
+        recipe1 = await self.create_test_recipe(db_session)
+
+        # Create product with one recipe
+        product = Product(
+            name="Product to Update",
+            fixed_costs=Money(Decimal("5.00"), "USD"),
+        )
+        product.add_recipe(recipe1.id, Decimal("1.0"))
+        created = await repo.create(product)
+
+        # Verify it has 1 recipe
+        assert len(created.recipes) == 1
+        assert created.recipes[0].quantity == Decimal("1.0")
+
+        # Create second recipe
+        ing_repo = IngredientRepository(db_session)
+        ingredient2 = Ingredient(name="Chocolate for Update", unit=MeasurementUnit.KILOGRAM)
+        created_ing2 = await ing_repo.create(ingredient2)
+
+        recipe_repo = RecipeRepository(db_session)
+        recipe2 = Recipe(name="Chocolate Recipe", instructions="Melt chocolate")
+        recipe2.add_ingredient(created_ing2.id, Decimal("0.2"))
+        recipe2 = await recipe_repo.create(recipe2)
+
+        # Update product to add second recipe
+        created.add_recipe(recipe2.id, Decimal("2.0"))
+        updated = await repo.update(created)
+
+        # Verify recipes were persisted (this was the bug)
+        assert len(updated.recipes) == 2
+        recipe_ids = [r.recipe_id for r in updated.recipes]
+        assert recipe1.id in recipe_ids
+        assert recipe2.id in recipe_ids
+
+        # Verify quantities
+        for recipe in updated.recipes:
+            if recipe.recipe_id == recipe1.id:
+                assert recipe.quantity == Decimal("1.0")
+            elif recipe.recipe_id == recipe2.id:
+                assert recipe.quantity == Decimal("2.0")
+
+    async def test_update_product_remove_recipes(self, db_session: AsyncSession):
+        """Test removing recipes from product during update."""
+        repo = ProductRepository(db_session)
+        recipe1 = await self.create_test_recipe(db_session)
+
+        # Create second recipe
+        ing_repo = IngredientRepository(db_session)
+        ingredient2 = Ingredient(name="Sugar for Remove", unit=MeasurementUnit.KILOGRAM)
+        created_ing2 = await ing_repo.create(ingredient2)
+
+        recipe_repo = RecipeRepository(db_session)
+        recipe2 = Recipe(name="Sugar Recipe", instructions="Add sugar")
+        recipe2.add_ingredient(created_ing2.id, Decimal("0.3"))
+        recipe2 = await recipe_repo.create(recipe2)
+
+        # Create product with two recipes
+        product = Product(
+            name="Product with 2 Recipes",
+            fixed_costs=Money(Decimal("10.00"), "USD"),
+        )
+        product.add_recipe(recipe1.id, Decimal("1.0"))
+        product.add_recipe(recipe2.id, Decimal("0.5"))
+        created = await repo.create(product)
+
+        # Verify it has 2 recipes
+        assert len(created.recipes) == 2
+
+        # Remove one recipe
+        created.recipes = [r for r in created.recipes if r.recipe_id == recipe1.id]
+        updated = await repo.update(created)
+
+        # Verify only one recipe remains
+        assert len(updated.recipes) == 1
+        assert updated.recipes[0].recipe_id == recipe1.id
+
+    async def test_update_product_change_recipe_quantity(self, db_session: AsyncSession):
+        """Test changing recipe quantities during product update."""
+        repo = ProductRepository(db_session)
+        recipe = await self.create_test_recipe(db_session)
+
+        # Create product with recipe
+        product = Product(
+            name="Product with Recipe Qty",
+            fixed_costs=Money(Decimal("7.00"), "USD"),
+        )
+        product.add_recipe(recipe.id, Decimal("1.0"))
+        created = await repo.create(product)
+
+        # Verify initial quantity
+        assert created.recipes[0].quantity == Decimal("1.0")
+
+        # Update quantity
+        created.recipes[0].quantity = Decimal("3.5")
+        updated = await repo.update(created)
+
+        # Verify quantity was updated
+        assert len(updated.recipes) == 1
+        assert updated.recipes[0].quantity == Decimal("3.5")
+
+        # Fetch again to verify persistence
+        fetched = await repo.get_with_recipes(updated.id)
+        assert fetched.recipes[0].quantity == Decimal("3.5")
