@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
 import { ProductsPage } from './ProductsPage';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { authService } from '../../services/auth.service';
@@ -12,15 +13,20 @@ import type { Product, Recipe } from '../../types';
 // Mock services
 vi.mock('../../services/auth.service', () => ({
   authService: {
-    isAuthenticated: vi.fn(),
+    login: vi.fn(),
+    register: vi.fn(),
     getCurrentUser: vi.fn(),
+    setToken: vi.fn(),
+    getToken: vi.fn(),
     clearToken: vi.fn(),
+    isAuthenticated: vi.fn(),
   },
 }));
 
 vi.mock('../../services/product.service', () => ({
   productService: {
     getAll: vi.fn(),
+    getById: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -30,6 +36,10 @@ vi.mock('../../services/product.service', () => ({
 vi.mock('../../services/recipe.service', () => ({
   recipeService: {
     getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -42,6 +52,9 @@ describe('ProductsPage', () => {
     username: 'adminuser',
     email: 'admin@test.com',
     role: 'admin' as const,
+    is_active: true,
+    full_name: 'Admin User',
+    created_at: '2025-01-01T10:00:00Z',
   };
 
   const mockRecipes: Recipe[] = [
@@ -50,6 +63,8 @@ describe('ProductsPage', () => {
       name: 'Bread Dough',
       instructions: 'Mix',
       ingredients: [],
+      created_at: '2025-01-01T10:00:00Z',
+      updated_at: '2025-01-01T10:00:00Z',
     },
   ];
 
