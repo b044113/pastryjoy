@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { authService } from './auth.service';
 import { apiClient } from './api';
+import { TestCredentials, createMockAuthResponse, createMockUser } from '../test/testConstants';
 
 // Mock the API client
 vi.mock('./api', () => ({
@@ -19,15 +20,15 @@ describe('authService', () => {
   describe('login', () => {
     it('calls API with credentials and returns token response', async () => {
       const mockResponse = {
-        data: {
-          access_token: 'test-token',
-          token_type: 'bearer',
-        },
+        data: createMockAuthResponse('test-token'),
       };
 
       vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
-      const credentials = { username: 'testuser', password: 'password123' };
+      const credentials = {
+        username: TestCredentials.TEST_USERNAME,
+        password: TestCredentials.TEST_PASSWORD
+      };
       const result = await authService.login(credentials);
 
       expect(apiClient.post).toHaveBeenCalledWith('/api/auth/login', credentials);
@@ -37,7 +38,10 @@ describe('authService', () => {
     it('throws error when login fails', async () => {
       vi.mocked(apiClient.post).mockRejectedValue(new Error('Login failed'));
 
-      const credentials = { username: 'testuser', password: 'wrong' };
+      const credentials = {
+        username: TestCredentials.TEST_USERNAME,
+        password: TestCredentials.WRONG_PASSWORD
+      };
 
       await expect(authService.login(credentials)).rejects.toThrow('Login failed');
     });
@@ -45,20 +49,18 @@ describe('authService', () => {
 
   describe('register', () => {
     it('calls API with registration data and returns user', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        username: 'testuser',
-        role: 'user',
-      };
+      const mockUser = createMockUser({
+        email: TestCredentials.TEST_EMAIL,
+        username: TestCredentials.TEST_USERNAME,
+      });
 
       const mockResponse = { data: mockUser };
       vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
       const registerData = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'password123',
+        email: TestCredentials.TEST_EMAIL,
+        username: TestCredentials.TEST_USERNAME,
+        password: TestCredentials.TEST_PASSWORD,
         full_name: 'Test User',
       };
 
@@ -72,9 +74,9 @@ describe('authService', () => {
       vi.mocked(apiClient.post).mockRejectedValue(new Error('Registration failed'));
 
       const registerData = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'password123',
+        email: TestCredentials.TEST_EMAIL,
+        username: TestCredentials.TEST_USERNAME,
+        password: TestCredentials.TEST_PASSWORD,
       };
 
       await expect(authService.register(registerData)).rejects.toThrow('Registration failed');
@@ -83,12 +85,10 @@ describe('authService', () => {
 
   describe('getCurrentUser', () => {
     it('calls API and returns current user', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        username: 'testuser',
-        role: 'user',
-      };
+      const mockUser = createMockUser({
+        email: TestCredentials.TEST_EMAIL,
+        username: TestCredentials.TEST_USERNAME,
+      });
 
       const mockResponse = { data: mockUser };
       vi.mocked(apiClient.get).mockResolvedValue(mockResponse);

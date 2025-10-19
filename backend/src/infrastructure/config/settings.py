@@ -15,10 +15,15 @@ class Settings(BaseSettings):
     )
 
     # Database
-    database_url: str = "postgresql://pastryjoy:pastryjoy@localhost:5432/pastryjoy"
+    # IMPORTANT: Set DATABASE_URL environment variable. Do NOT hardcode credentials.
+    # Example: DATABASE_URL=postgresql+asyncpg://username:password@host:port/database
+    # For development: DATABASE_URL=sqlite+aiosqlite:///./pastryjoy.db
+    database_url: str
 
     # Security
-    secret_key: str = "change-this-in-production-use-openssl-rand-hex-32"
+    # IMPORTANT: Set SECRET_KEY environment variable. Generate with: openssl rand -hex 32
+    # NEVER use default values in production!
+    secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 

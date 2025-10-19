@@ -5,13 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.value_objects.user_role import UserRole
 from src.infrastructure.database.models.user import UserModel
 from src.infrastructure.security.auth import get_password_hash
+from tests.test_constants import TestCredentials
 
 
 async def create_test_user(
     session: AsyncSession,
-    email: str = "testuser@test.com",
-    username: str = "testuser",
-    password: str = "password123",
+    email: str = TestCredentials.TEST_EMAIL,
+    username: str = TestCredentials.TEST_USERNAME,
+    password: str = TestCredentials.TEST_PASSWORD,
     role: UserRole = UserRole.USER,
     full_name: str | None = "Test User",
 ) -> UserModel:
@@ -44,8 +45,8 @@ async def create_test_user(
 
 async def get_auth_token(
     client: AsyncClient,
-    username: str = "testuser",
-    password: str = "password123",
+    username: str = TestCredentials.TEST_USERNAME,
+    password: str = TestCredentials.TEST_PASSWORD,
 ) -> str:
     """Get authentication token for a user.
 
@@ -67,9 +68,9 @@ async def get_auth_token(
 async def create_admin_and_get_token(
     client: AsyncClient,
     session: AsyncSession,
-    email: str = "admin@test.com",
-    username: str = "adminuser",
-    password: str = "admin123456",
+    email: str = TestCredentials.ADMIN_EMAIL,
+    username: str = TestCredentials.ADMIN_USERNAME,
+    password: str = TestCredentials.ADMIN_PASSWORD,
 ) -> str:
     """Create an admin user and get auth token.
 

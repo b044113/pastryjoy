@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.value_objects.user_role import UserRole
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.security.auth import get_password_hash
+from tests.test_constants import TestCredentials
 
 
 @pytest.mark.asyncio
@@ -17,9 +18,9 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "test@example.com",
-                "username": "testuser",
-                "password": "password123",
+                "email": TestCredentials.TEST_EMAIL,
+                "username": TestCredentials.TEST_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
                 "full_name": "Test User",
             },
         )
@@ -28,8 +29,8 @@ class TestUserRegistration:
             print(f"Error response: {response.text}")
         assert response.status_code == 201
         data = response.json()
-        assert data["email"] == "test@example.com"
-        assert data["username"] == "testuser"
+        assert data["email"] == TestCredentials.TEST_EMAIL
+        assert data["username"] == TestCredentials.TEST_USERNAME
         assert data["full_name"] == "Test User"
         assert data["role"] == UserRole.USER.value
         assert data["is_active"] is True
@@ -43,16 +44,16 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "test2@example.com",
-                "username": "testuser2",
-                "password": "password123",
+                "email": TestCredentials.TEST_EMAIL_2,
+                "username": TestCredentials.TEST_USERNAME_2,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
         assert response.status_code == 201
         data = response.json()
-        assert data["email"] == "test2@example.com"
-        assert data["username"] == "testuser2"
+        assert data["email"] == TestCredentials.TEST_EMAIL_2
+        assert data["username"] == TestCredentials.TEST_USERNAME_2
         assert data["full_name"] is None
 
     async def test_register_duplicate_email(self, client: AsyncClient):
@@ -61,9 +62,9 @@ class TestUserRegistration:
         await client.post(
             "/api/auth/register",
             json={
-                "email": "duplicate@example.com",
+                "email": TestCredentials.DUPLICATE_EMAIL,
                 "username": "user1",
-                "password": "password123",
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -71,9 +72,9 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "duplicate@example.com",
+                "email": TestCredentials.DUPLICATE_EMAIL,
                 "username": "user2",
-                "password": "password123",
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -87,8 +88,8 @@ class TestUserRegistration:
             "/api/auth/register",
             json={
                 "email": "user1@example.com",
-                "username": "duplicateuser",
-                "password": "password123",
+                "username": TestCredentials.DUPLICATE_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -97,8 +98,8 @@ class TestUserRegistration:
             "/api/auth/register",
             json={
                 "email": "user2@example.com",
-                "username": "duplicateuser",
-                "password": "password123",
+                "username": TestCredentials.DUPLICATE_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -111,8 +112,8 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "username": "testuser",
-                "password": "password123",
+                "username": TestCredentials.TEST_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
         assert response.status_code == 422  # Validation error
@@ -121,8 +122,8 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "test@example.com",
-                "password": "password123",
+                "email": TestCredentials.TEST_EMAIL,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
         assert response.status_code == 422
@@ -131,8 +132,8 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "test@example.com",
-                "username": "testuser",
+                "email": TestCredentials.TEST_EMAIL,
+                "username": TestCredentials.TEST_USERNAME,
             },
         )
         assert response.status_code == 422
@@ -142,9 +143,9 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "not-an-email",
-                "username": "testuser",
-                "password": "password123",
+                "email": TestCredentials.INVALID_EMAIL,
+                "username": TestCredentials.TEST_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -156,8 +157,8 @@ class TestUserRegistration:
         response = await client.post(
             "/api/auth/register",
             json={
-                "email": "test@example.com",
-                "username": "testuser",
+                "email": TestCredentials.TEST_EMAIL,
+                "username": TestCredentials.TEST_USERNAME,
                 "password": "",
             },
         )
@@ -175,9 +176,9 @@ class TestUserLogin:
         await client.post(
             "/api/auth/register",
             json={
-                "email": "login@example.com",
-                "username": "loginuser",
-                "password": "password123",
+                "email": TestCredentials.LOGIN_EMAIL,
+                "username": TestCredentials.LOGIN_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -185,8 +186,8 @@ class TestUserLogin:
         response = await client.post(
             "/api/auth/login",
             json={
-                "username": "loginuser",
-                "password": "password123",
+                "username": TestCredentials.LOGIN_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -202,7 +203,7 @@ class TestUserLogin:
             "/api/auth/login",
             json={
                 "username": "nonexistent",
-                "password": "password123",
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -216,8 +217,8 @@ class TestUserLogin:
             "/api/auth/register",
             json={
                 "email": "user@example.com",
-                "username": "testuser",
-                "password": "correctpassword",
+                "username": TestCredentials.TEST_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -225,8 +226,8 @@ class TestUserLogin:
         response = await client.post(
             "/api/auth/login",
             json={
-                "username": "testuser",
-                "password": "wrongpassword",
+                "username": TestCredentials.TEST_USERNAME,
+                "password": TestCredentials.WRONG_PASSWORD,
             },
         )
 
@@ -239,7 +240,7 @@ class TestUserLogin:
         response = await client.post(
             "/api/auth/login",
             json={
-                "password": "password123",
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
         assert response.status_code == 422
@@ -248,7 +249,7 @@ class TestUserLogin:
         response = await client.post(
             "/api/auth/login",
             json={
-                "username": "testuser",
+                "username": TestCredentials.TEST_USERNAME,
             },
         )
         assert response.status_code == 422
@@ -261,9 +262,9 @@ class TestUserLogin:
         await client.post(
             "/api/auth/register",
             json={
-                "email": "inactive@example.com",
-                "username": "inactiveuser",
-                "password": "password123",
+                "email": TestCredentials.INACTIVE_EMAIL,
+                "username": TestCredentials.INACTIVE_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -272,7 +273,7 @@ class TestUserLogin:
         from sqlalchemy import select
 
         result = await db_session.execute(
-            select(UserModel).where(UserModel.username == "inactiveuser")
+            select(UserModel).where(UserModel.username == TestCredentials.INACTIVE_USERNAME)
         )
         user_model = result.scalar_one()
         user_model.is_active = False
@@ -282,8 +283,8 @@ class TestUserLogin:
         response = await client.post(
             "/api/auth/login",
             json={
-                "username": "inactiveuser",
-                "password": "password123",
+                "username": TestCredentials.INACTIVE_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -301,9 +302,9 @@ class TestGetCurrentUser:
         await client.post(
             "/api/auth/register",
             json={
-                "email": "current@example.com",
-                "username": "currentuser",
-                "password": "password123",
+                "email": TestCredentials.CURRENT_EMAIL,
+                "username": TestCredentials.CURRENT_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
                 "full_name": "Current User",
             },
         )
@@ -311,8 +312,8 @@ class TestGetCurrentUser:
         login_response = await client.post(
             "/api/auth/login",
             json={
-                "username": "currentuser",
-                "password": "password123",
+                "username": TestCredentials.CURRENT_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
 
@@ -357,9 +358,9 @@ class TestAuthFlows:
         register_response = await client.post(
             "/api/auth/register",
             json={
-                "email": "flow@example.com",
-                "username": "flowuser",
-                "password": "password123",
+                "email": TestCredentials.FLOW_EMAIL,
+                "username": TestCredentials.FLOW_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
                 "full_name": "Flow User",
             },
         )
@@ -370,8 +371,8 @@ class TestAuthFlows:
         login_response = await client.post(
             "/api/auth/login",
             json={
-                "username": "flowuser",
-                "password": "password123",
+                "username": TestCredentials.FLOW_USERNAME,
+                "password": TestCredentials.TEST_PASSWORD,
             },
         )
         assert login_response.status_code == 200

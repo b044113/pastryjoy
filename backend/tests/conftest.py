@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from src.infrastructure.database.session import Base, get_db
 from src.presentation.api.main import app
+from tests.test_constants import TestCredentials
 
 
 # Create test database engine
@@ -69,3 +70,39 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_credentials() -> TestCredentials:
+    """Provide test credentials for tests."""
+    return TestCredentials
+
+
+@pytest.fixture
+def test_user_data() -> dict:
+    """Provide test user registration data."""
+    return {
+        "email": TestCredentials.TEST_EMAIL,
+        "username": TestCredentials.TEST_USERNAME,
+        "password": TestCredentials.TEST_PASSWORD,
+    }
+
+
+@pytest.fixture
+def admin_user_data() -> dict:
+    """Provide admin user registration data."""
+    return {
+        "email": TestCredentials.ADMIN_EMAIL,
+        "username": TestCredentials.ADMIN_USERNAME,
+        "password": TestCredentials.ADMIN_PASSWORD,
+        "role": "admin",
+    }
+
+
+@pytest.fixture
+def test_login_data() -> dict:
+    """Provide test login credentials."""
+    return {
+        "username": TestCredentials.TEST_USERNAME,
+        "password": TestCredentials.TEST_PASSWORD,
+    }

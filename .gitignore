@@ -50,10 +50,20 @@ htmlcov/
 *.sqlite
 *.sqlite3
 
-# Environment variables
+# Environment variables - NEVER commit credentials!
 .env
 .env.local
 .env.*.local
+backend/.env
+backend/.env.local
+frontend/.env
+frontend/.env.local
+
+# Debug and test scripts with hardcoded credentials
+backend/debug_*.py
+backend/test_*.py
+backend/check_*.py
+**/kill_port_*.ps1
 
 # IDE
 .vscode/
