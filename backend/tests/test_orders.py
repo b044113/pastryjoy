@@ -59,7 +59,8 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "John Doe",
-                "items": [{"product_id": product_id, "quantity": 2}],
+                "customer_email": "john@test.com",
+                "items": [{"product_id": product_id, "quantity": 2, "unit_price": "5.99"}],
             },
             headers={"Authorization": f"Bearer {user_token}"},
         )
@@ -67,8 +68,9 @@ class TestOrders:
         assert response.status_code == 201
         data = response.json()
         assert data["customer_name"] == "John Doe"
+        assert data["customer_email"] == "john@test.com"
         assert len(data["items"]) == 1
-        assert data["items"][0]["quantity"] == 2
+        assert float(data["items"][0]["quantity"]) == 2.0
         assert data["status"] == "pending"
 
     async def test_create_order_unauthorized(self, client: AsyncClient):
@@ -100,7 +102,8 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "User 1",
-                "items": [{"product_id": product_id, "quantity": 1}],
+                "customer_email": "user1order@test.com",
+                "items": [{"product_id": product_id, "quantity": 1, "unit_price": "10.0"}],
             },
             headers={"Authorization": f"Bearer {user1_token}"},
         )
@@ -110,7 +113,8 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "User 2",
-                "items": [{"product_id": product_id, "quantity": 1}],
+                "customer_email": "user2order@test.com",
+                "items": [{"product_id": product_id, "quantity": 1, "unit_price": "10.0"}],
             },
             headers={"Authorization": f"Bearer {user2_token}"},
         )
@@ -145,7 +149,8 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "Jane Doe",
-                "items": [{"product_id": product_id, "quantity": 1}],
+                "customer_email": "jane@test.com",
+                "items": [{"product_id": product_id, "quantity": 1, "unit_price": "15.0"}],
             },
             headers={"Authorization": f"Bearer {user_token}"},
         )
@@ -170,7 +175,8 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "Test Customer",
-                "items": [{"product_id": product_id, "quantity": 1}],
+                "customer_email": "testcustomer@test.com",
+                "items": [{"product_id": product_id, "quantity": 1, "unit_price": "10.0"}],
             },
             headers={"Authorization": f"Bearer {admin_token}"},
         )
@@ -187,26 +193,24 @@ class TestOrders:
         assert data["status"] == "completed"
 
     async def test_delete_order(self, client: AsyncClient, db_session: AsyncSession):
-        """Test deleting an order."""
+        """Test deleting an order (admin only)."""
         admin_token = await create_admin_and_get_token(client, db_session)
         product_id = await self.create_product(client, admin_token, "Product", 10.0)
-
-        await create_test_user(db_session, "user1@test.com", "user1", "pass123", UserRole.USER)
-        user_token = await get_auth_token(client, "user1", "pass123")
 
         create_response = await client.post(
             "/api/orders/",
             json={
                 "customer_name": "To Delete",
-                "items": [{"product_id": product_id, "quantity": 1}],
+                "customer_email": "todelete@test.com",
+                "items": [{"product_id": product_id, "quantity": 1, "unit_price": "10.0"}],
             },
-            headers={"Authorization": f"Bearer {user_token}"},
+            headers={"Authorization": f"Bearer {admin_token}"},
         )
         order_id = create_response.json()["id"]
 
         response = await client.delete(
             f"/api/orders/{order_id}",
-            headers={"Authorization": f"Bearer {user_token}"},
+            headers={"Authorization": f"Bearer {admin_token}"},
         )
 
         assert response.status_code == 204
@@ -214,7 +218,7 @@ class TestOrders:
         # Verify deleted
         get_response = await client.get(
             f"/api/orders/{order_id}",
-            headers={"Authorization": f"Bearer {user_token}"},
+            headers={"Authorization": f"Bearer {admin_token}"},
         )
         assert get_response.status_code == 404
 
@@ -231,9 +235,10 @@ class TestOrders:
             "/api/orders/",
             json={
                 "customer_name": "Multi Item Customer",
+                "customer_email": "multi@test.com",
                 "items": [
-                    {"product_id": product1_id, "quantity": 3},
-                    {"product_id": product2_id, "quantity": 1},
+                    {"product_id": product1_id, "quantity": 3, "unit_price": "5.0"},
+                    {"product_id": product2_id, "quantity": 1, "unit_price": "10.0"},
                 ],
             },
             headers={"Authorization": f"Bearer {user_token}"},
@@ -242,4 +247,4 @@ class TestOrders:
         assert response.status_code == 201
         data = response.json()
         assert len(data["items"]) == 2
-        assert data["total_amount"] > 0
+        assert float(data["total"]) > 0

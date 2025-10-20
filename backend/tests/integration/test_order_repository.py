@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.ingredient import Ingredient
-from src.domain.entities.order import Order
+from src.domain.entities.order import Order, OrderStatus
 from src.domain.entities.product import Product
 from src.domain.entities.recipe import Recipe
 from src.domain.entities.user import User
@@ -68,9 +68,8 @@ class TestOrderRepository:
         order = Order(
             customer_name="John Doe",
             customer_email="john@test.com",
-            customer_phone="555-1234",
-            created_by=user.id,
-            status="pending",
+            created_by_user_id=user.id,
+            status=OrderStatus.PENDING,
         )
         order.add_item(product.id, 2, Money(Decimal("10.00"), "USD"))
 
@@ -78,7 +77,7 @@ class TestOrderRepository:
 
         assert created.id is not None
         assert created.customer_name == "John Doe"
-        assert created.status == "pending"
+        assert created.status == OrderStatus.PENDING
         assert len(created.items) == 1
 
     async def test_get_by_id(self, db_session: AsyncSession):
@@ -89,8 +88,9 @@ class TestOrderRepository:
 
         order = Order(
             customer_name="Jane Doe",
-            created_by=user.id,
-            status="pending",
+            customer_email="jane@test.com",
+            created_by_user_id=user.id,
+            status=OrderStatus.PENDING,
         )
         order.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
         created = await repo.create(order)
@@ -111,8 +111,9 @@ class TestOrderRepository:
         for i in range(3):
             order = Order(
                 customer_name=f"Customer {i}",
-                created_by=user.id,
-                status="pending",
+                customer_email=f"customer{i}@test.com",
+                created_by_user_id=user.id,
+                status=OrderStatus.PENDING,
             )
             order.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
             await repo.create(order)
@@ -140,8 +141,9 @@ class TestOrderRepository:
         # Create order for user1
         order1 = Order(
             customer_name="User1 Order",
-            created_by=user1.id,
-            status="pending",
+            customer_email="user1order@test.com",
+            created_by_user_id=user1.id,
+            status=OrderStatus.PENDING,
         )
         order1.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
         await repo.create(order1)
@@ -149,8 +151,9 @@ class TestOrderRepository:
         # Create order for user2
         order2 = Order(
             customer_name="User2 Order",
-            created_by=user2.id,
-            status="pending",
+            customer_email="user2order@test.com",
+            created_by_user_id=user2.id,
+            status=OrderStatus.PENDING,
         )
         order2.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
         await repo.create(order2)
@@ -159,7 +162,7 @@ class TestOrderRepository:
         user1_orders = await repo.get_by_user_id(user1.id)
 
         assert len(user1_orders) >= 1
-        assert all(order.created_by == user1.id for order in user1_orders)
+        assert all(order.created_by_user_id == user1.id for order in user1_orders)
 
     async def test_update_order(self, db_session: AsyncSession):
         """Test updating an order."""
@@ -169,17 +172,18 @@ class TestOrderRepository:
 
         order = Order(
             customer_name="Original Name",
-            created_by=user.id,
-            status="pending",
+            customer_email="original@test.com",
+            created_by_user_id=user.id,
+            status=OrderStatus.PENDING,
         )
         order.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
         created = await repo.create(order)
 
-        # Update status
-        created.update_status("completed")
+        # Update status directly (Order is a dataclass)
+        object.__setattr__(created, "status", OrderStatus.COMPLETED)
         updated = await repo.update(created)
 
-        assert updated.status == "completed"
+        assert updated.status == OrderStatus.COMPLETED
 
     async def test_delete_order(self, db_session: AsyncSession):
         """Test deleting an order."""
@@ -189,8 +193,9 @@ class TestOrderRepository:
 
         order = Order(
             customer_name="To Delete",
-            created_by=user.id,
-            status="pending",
+            customer_email="delete@test.com",
+            created_by_user_id=user.id,
+            status=OrderStatus.PENDING,
         )
         order.add_item(product.id, 1, Money(Decimal("10.00"), "USD"))
         created = await repo.create(order)
@@ -225,8 +230,9 @@ class TestOrderRepository:
 
         order = Order(
             customer_name="Multi Item Order",
-            created_by=user.id,
-            status="pending",
+            customer_email="multi@test.com",
+            created_by_user_id=user.id,
+            status=OrderStatus.PENDING,
         )
         order.add_item(product1.id, 2, Money(Decimal("10.00"), "USD"))
         order.add_item(product2.id, 1, Money(Decimal("8.00"), "USD"))

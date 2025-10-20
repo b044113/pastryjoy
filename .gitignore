@@ -93,3 +93,6 @@ logs/
 *.tmp
 *.temp
 .cache/
+
+# Windows reserved names
+nul

@@ -3,7 +3,7 @@ name = "pastryjoy-backend"
 version = "0.1.0"
 description = "Bakery management system backend API"
 authors = ["PastryJoy Team"]
-readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"

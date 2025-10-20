@@ -111,7 +111,7 @@ async def list_orders(
     if current_user.is_admin():
         orders = await repo.get_all(skip, limit)
     else:
-        orders = await repo.get_by_user(current_user.id, skip, limit)
+        orders = await repo.get_by_user_id(current_user.id, skip, limit)
 
     return [
         OrderResponseDTO(

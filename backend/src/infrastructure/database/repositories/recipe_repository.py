@@ -84,6 +84,22 @@ class RecipeRepository(IRecipeRepository):
         model.instructions = entity.instructions
         model.updated_at = entity.updated_at
 
+        # Sync ingredients - remove old ones, add new ones
+        # Clear existing ingredients
+        model.ingredients.clear()
+
+        # Add all ingredients from entity
+        for recipe_ing in entity.ingredients:
+            ing_model = RecipeIngredientModel(
+                id=recipe_ing.id,
+                recipe_id=entity.id,
+                ingredient_id=recipe_ing.ingredient_id,
+                quantity=recipe_ing.quantity,
+                created_at=recipe_ing.created_at,
+                updated_at=recipe_ing.updated_at,
+            )
+            model.ingredients.append(ing_model)
+
         await self._session.flush()
 
         # Reload with ingredients and their ingredient data

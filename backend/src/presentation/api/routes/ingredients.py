@@ -40,6 +40,8 @@ async def create_ingredient(
     Returns:
         Created ingredient data
     """
+    from sqlalchemy.exc import IntegrityError
+
     repo = IngredientRepository(session)
 
     # Create entity
@@ -49,7 +51,13 @@ async def create_ingredient(
     )
 
     # Save to database
-    created = await repo.create(ingredient)
+    try:
+        created = await repo.create(ingredient)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Ingredient with name '{dto.name}' already exists",
+        )
 
     return IngredientResponseDTO(
         id=created.id,

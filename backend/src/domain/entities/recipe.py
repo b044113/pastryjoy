@@ -36,6 +36,14 @@ class Recipe(BaseEntity):
         self.ingredients.append(recipe_ingredient)
         return self
 
+    def update_ingredient_quantity(self, ingredient_id: UUID, quantity: Decimal) -> "Recipe":
+        """Update the quantity of an existing ingredient in the recipe."""
+        for ingredient in self.ingredients:
+            if ingredient.ingredient_id == ingredient_id:
+                ingredient.quantity = quantity
+                return self
+        raise ValueError(f"Ingredient {ingredient_id} not found in recipe")
+
     def remove_ingredient(self, ingredient_id: UUID) -> "Recipe":
         """Remove an ingredient from the recipe."""
         self.ingredients = [

@@ -107,6 +107,7 @@ class OrderRepository(IOrderRepository):
         stmt = (
             select(OrderModel)
             .where(OrderModel.customer_email == email)
+            .options(selectinload(OrderModel.items))
             .offset(skip)
             .limit(limit)
         )
@@ -121,6 +122,7 @@ class OrderRepository(IOrderRepository):
         stmt = (
             select(OrderModel)
             .where(OrderModel.status == status.value)
+            .options(selectinload(OrderModel.items))
             .offset(skip)
             .limit(limit)
         )
@@ -128,13 +130,14 @@ class OrderRepository(IOrderRepository):
         models = result.scalars().all()
         return [OrderMapper.to_entity(model) for model in models]
 
-    async def get_by_user(
+    async def get_by_user_id(
         self, user_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Order]:
         """Get orders created by specific user."""
         stmt = (
             select(OrderModel)
             .where(OrderModel.created_by_user_id == user_id)
+            .options(selectinload(OrderModel.items))
             .offset(skip)
             .limit(limit)
         )
