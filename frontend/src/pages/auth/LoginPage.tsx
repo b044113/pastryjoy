@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -8,6 +9,7 @@ import { Card } from '../../components/common/Card';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +24,7 @@ export const LoginPage: React.FC = () => {
       await login({ username, password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed');
+      setError(err.response?.data?.detail || t('auth.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -34,12 +36,12 @@ export const LoginPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🥐</div>
           <h1 className="text-3xl font-bold text-gray-900">PastryJoy</h1>
-          <p className="text-gray-600 mt-2">Welcome back!</p>
+          <p className="text-gray-600 mt-2">{t('auth.welcomeBack')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Username"
+            label={t('auth.username')}
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -49,7 +51,7 @@ export const LoginPage: React.FC = () => {
           />
 
           <Input
-            label="Password"
+            label={t('auth.password')}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -72,18 +74,18 @@ export const LoginPage: React.FC = () => {
               onClick={() => navigate('/')}
               disabled={loading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" fullWidth disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? t('auth.loggingIn') : t('auth.login')}
             </Button>
           </div>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          {t('auth.dontHaveAccount')}{' '}
           <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-            Register here
+            {t('auth.registerHere')}
           </Link>
         </p>
       </Card>

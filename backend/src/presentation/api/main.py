@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.infrastructure.config import get_settings
-from src.presentation.api.routes import auth, ingredients, recipes, products, orders
+from src.presentation.api.routes import auth, ingredients, recipes, products, orders, users
 
 settings = get_settings()
 
@@ -27,6 +27,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(ingredients.router, prefix="/api/ingredients", tags=["Ingredients"])
 app.include_router(recipes.router, prefix="/api/recipes", tags=["Recipes"])
 app.include_router(products.router, prefix="/api/products", tags=["Products"])

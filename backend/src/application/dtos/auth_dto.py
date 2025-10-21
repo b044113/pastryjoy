@@ -28,6 +28,12 @@ class TokenResponseDTO(BaseModel):
     token_type: str = "bearer"
 
 
+class UserSettingsDTO(BaseModel):
+    """Settings DTO for user data."""
+
+    preferred_language: str
+
+
 class UserResponseDTO(BaseModel):
     """Response DTO for user data."""
 
@@ -37,6 +43,7 @@ class UserResponseDTO(BaseModel):
     role: str
     is_active: bool
     full_name: str | None
+    settings: UserSettingsDTO
     created_at: datetime
 
     class Config:

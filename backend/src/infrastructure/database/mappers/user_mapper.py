@@ -1,6 +1,7 @@
 """User mapper between database model and domain entity."""
 from src.domain.entities.user import User
 from src.domain.value_objects.user_role import UserRole
+from src.domain.value_objects.user_settings import UserSettings
 from src.infrastructure.database.models.user import UserModel
 
 
@@ -18,6 +19,7 @@ class UserMapper:
             role=UserRole(model.role),
             is_active=model.is_active,
             full_name=model.full_name,
+            settings=UserSettings(preferred_language=model.preferred_language),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -33,6 +35,7 @@ class UserMapper:
             role=entity.role.value,
             is_active=entity.is_active,
             full_name=entity.full_name,
+            preferred_language=entity.settings.preferred_language,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

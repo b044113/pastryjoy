@@ -132,7 +132,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      expect(await screen.findByText(/no orders yet/i)).toBeInTheDocument();
+      expect(await screen.findByText('orders.noOrdersYet')).toBeInTheDocument();
     });
   });
 
@@ -143,7 +143,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      expect(await screen.findByRole('heading', { name: /^orders$/i })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'orders.title' })).toBeInTheDocument();
     });
 
     it('renders all orders', async () => {
@@ -162,7 +162,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      expect(await screen.findByText('+ Create Order')).toBeInTheDocument();
+      expect(await screen.findByText('orders.createOrder', { exact: false })).toBeInTheDocument();
     });
 
     it('displays order status', async () => {
@@ -172,7 +172,8 @@ describe('OrdersPage', () => {
       renderOrdersPage();
 
       await waitFor(() => {
-        expect(screen.getAllByText(/pending|completed/i).length).toBeGreaterThan(0);
+        expect(screen.getByText('orders.statuses.pending')).toBeInTheDocument();
+        expect(screen.getByText('orders.statuses.completed')).toBeInTheDocument();
       });
     });
   });
@@ -185,10 +186,10 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      const addButton = await screen.findByText('+ Create Order');
+      const addButton = await screen.findByText('orders.createOrder', { exact: false });
       await user.click(addButton);
 
-      expect(screen.getByRole('heading', { name: /create order/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'orders.createOrder' })).toBeInTheDocument();
     });
   });
 
@@ -201,11 +202,11 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(confirm).toHaveBeenCalledWith('Are you sure you want to delete this order?');
+        expect(confirm).toHaveBeenCalledWith('orders.deleteConfirm');
         expect(orderService.delete).toHaveBeenCalledWith('1');
       });
     });
@@ -218,7 +219,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
@@ -236,7 +237,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage(true);
 
-      expect(await screen.findAllByText('Update Status')).toHaveLength(2);
+      expect(await screen.findAllByText('orders.updateStatus')).toHaveLength(2);
     });
   });
 
@@ -248,16 +249,16 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      const addButton = await screen.findByText('+ Create Order');
+      const addButton = await screen.findByText('orders.createOrder', { exact: false });
       await user.click(addButton);
 
-      expect(screen.getByRole('heading', { name: /create order/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'orders.createOrder' })).toBeInTheDocument();
 
-      const cancelButton = screen.getByText('Cancel');
+      const cancelButton = screen.getByText('common.cancel');
       await user.click(cancelButton);
 
       await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /create order/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'orders.createOrder' })).not.toBeInTheDocument();
       });
     });
   });
@@ -273,7 +274,7 @@ describe('OrdersPage', () => {
 
       renderOrdersPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {

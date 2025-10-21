@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/layout/Layout';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -9,6 +10,7 @@ import { ingredientService } from '../../services/ingredient.service';
 import type { Ingredient } from '../../types';
 
 export const IngredientsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,13 +74,13 @@ export const IngredientsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this ingredient?')) return;
+    if (!confirm(t('ingredients.deleteConfirm'))) return;
 
     try {
       await ingredientService.delete(id);
       await loadIngredients();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete ingredient');
+      alert(err.response?.data?.detail || t('errors.generic'));
     }
   };
 
@@ -89,11 +91,11 @@ export const IngredientsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Ingredients</h1>
-            <p className="text-gray-600 mt-2">Manage your bakery ingredients</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('ingredients.title')}</h1>
+            <p className="text-gray-600 mt-2">{t('dashboard.manageIngredients')}</p>
           </div>
           <Button onClick={() => handleOpenModal()}>
-            + Add Ingredient
+            + {t('ingredients.createIngredient')}
           </Button>
         </div>
 
@@ -101,9 +103,9 @@ export const IngredientsPage: React.FC = () => {
           <Card>
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🥚</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No ingredients yet</h3>
-              <p className="text-gray-600 mb-6">Get started by adding your first ingredient</p>
-              <Button onClick={() => handleOpenModal()}>Add First Ingredient</Button>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('dashboard.noOrders')}</h3>
+              <p className="text-gray-600 mb-6">{t('ingredients.createIngredient')}</p>
+              <Button onClick={() => handleOpenModal()}>{t('ingredients.createIngredient')}</Button>
             </div>
           </Card>
         ) : (
@@ -113,7 +115,7 @@ export const IngredientsPage: React.FC = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{ingredient.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">Unit: {ingredient.unit}</p>
+                    <p className="text-sm text-gray-600 mt-1">{t('ingredients.unit')}: {ingredient.unit}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
@@ -123,7 +125,7 @@ export const IngredientsPage: React.FC = () => {
                     onClick={() => handleOpenModal(ingredient)}
                     className="flex-1"
                   >
-                    Edit
+                    {t('common.edit')}
                   </Button>
                   <Button
                     variant="danger"
@@ -131,7 +133,7 @@ export const IngredientsPage: React.FC = () => {
                     onClick={() => handleDelete(ingredient.id)}
                     className="flex-1"
                   >
-                    Delete
+                    {t('common.delete')}
                   </Button>
                 </div>
               </Card>
@@ -143,21 +145,21 @@ export const IngredientsPage: React.FC = () => {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={editingIngredient ? 'Edit Ingredient' : 'Add Ingredient'}
+          title={editingIngredient ? t('ingredients.editIngredient') : t('ingredients.createIngredient')}
           footer={
             <>
               <Button variant="secondary" onClick={handleCloseModal}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Saving...' : 'Save'}
+                {submitting ? t('common.loading') : t('common.save')}
               </Button>
             </>
           }
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Name"
+              label={t('common.name')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -166,7 +168,7 @@ export const IngredientsPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit <span className="text-red-500">*</span>
+                {t('ingredients.unit')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.unit}
@@ -175,14 +177,14 @@ export const IngredientsPage: React.FC = () => {
                 required
                 disabled={submitting}
               >
-                <option value="kg">Kilogram (kg)</option>
-                <option value="g">Gram (g)</option>
-                <option value="l">Liter (l)</option>
-                <option value="ml">Milliliter (ml)</option>
-                <option value="unit">Unit</option>
-                <option value="tbsp">Tablespoon (tbsp)</option>
-                <option value="tsp">Teaspoon (tsp)</option>
-                <option value="cup">Cup</option>
+                <option value="kg">{t('ingredients.units.kg')}</option>
+                <option value="g">{t('ingredients.units.g')}</option>
+                <option value="l">{t('ingredients.units.l')}</option>
+                <option value="ml">{t('ingredients.units.ml')}</option>
+                <option value="unit">{t('ingredients.units.unit')}</option>
+                <option value="tbsp">{t('ingredients.units.tbsp')}</option>
+                <option value="tsp">{t('ingredients.units.tsp')}</option>
+                <option value="cup">{t('ingredients.units.cup')}</option>
               </select>
             </div>
 

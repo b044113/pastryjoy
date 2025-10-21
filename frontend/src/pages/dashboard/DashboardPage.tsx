@@ -1,30 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/common/Card';
 
 export const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, isAdmin } = useAuth();
 
   const adminCards = [
     {
-      title: 'Ingredients',
-      description: 'Manage your bakery ingredients',
+      title: t('dashboard.cards.ingredients.title'),
+      description: t('dashboard.cards.ingredients.description'),
       icon: '🥚',
       link: '/ingredients',
       color: 'bg-blue-50 border-blue-200',
     },
     {
-      title: 'Recipes',
-      description: 'Create and manage recipes',
+      title: t('dashboard.cards.recipes.title'),
+      description: t('dashboard.cards.recipes.description'),
       icon: '📖',
       link: '/recipes',
       color: 'bg-green-50 border-green-200',
     },
     {
-      title: 'Products',
-      description: 'Manage your product catalog',
+      title: t('dashboard.cards.products.title'),
+      description: t('dashboard.cards.products.description'),
       icon: '🎂',
       link: '/products',
       color: 'bg-purple-50 border-purple-200',
@@ -33,8 +35,8 @@ export const DashboardPage: React.FC = () => {
 
   const userCards = [
     {
-      title: 'Orders',
-      description: 'View and create orders',
+      title: t('dashboard.cards.orders.title'),
+      description: t('dashboard.cards.orders.description'),
       icon: '📦',
       link: '/orders',
       color: 'bg-orange-50 border-orange-200',
@@ -48,12 +50,12 @@ export const DashboardPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.full_name || user?.username}!
+            {t('dashboard.welcomeBack', { name: user?.full_name || user?.username })}
           </h1>
           <p className="text-gray-600 mt-2">
             {isAdmin()
-              ? 'Manage your bakery operations from here'
-              : 'View and create orders'}
+              ? t('dashboard.adminSubtitle')
+              : t('dashboard.userSubtitle')}
           </p>
         </div>
 
@@ -73,27 +75,27 @@ export const DashboardPage: React.FC = () => {
 
         {/* Quick Stats */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Stats</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.quickStats')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <div className="text-center">
-                <p className="text-gray-600 text-sm uppercase tracking-wide">Total Orders</p>
+                <p className="text-gray-600 text-sm uppercase tracking-wide">{t('dashboard.totalOrders')}</p>
                 <p className="text-4xl font-bold text-primary-600 mt-2">-</p>
-                <p className="text-gray-500 text-sm mt-1">Coming soon</p>
+                <p className="text-gray-500 text-sm mt-1">{t('dashboard.comingSoon')}</p>
               </div>
             </Card>
             <Card>
               <div className="text-center">
-                <p className="text-gray-600 text-sm uppercase tracking-wide">Active Products</p>
+                <p className="text-gray-600 text-sm uppercase tracking-wide">{t('dashboard.activeProducts')}</p>
                 <p className="text-4xl font-bold text-green-600 mt-2">-</p>
-                <p className="text-gray-500 text-sm mt-1">Coming soon</p>
+                <p className="text-gray-500 text-sm mt-1">{t('dashboard.comingSoon')}</p>
               </div>
             </Card>
             <Card>
               <div className="text-center">
-                <p className="text-gray-600 text-sm uppercase tracking-wide">Revenue</p>
+                <p className="text-gray-600 text-sm uppercase tracking-wide">{t('dashboard.revenue')}</p>
                 <p className="text-4xl font-bold text-purple-600 mt-2">-</p>
-                <p className="text-gray-500 text-sm mt-1">Coming soon</p>
+                <p className="text-gray-500 text-sm mt-1">{t('dashboard.comingSoon')}</p>
               </div>
             </Card>
           </div>

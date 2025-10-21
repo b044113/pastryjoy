@@ -7,6 +7,7 @@ from src.application.dtos.auth_dto import (
     RegisterRequestDTO,
     TokenResponseDTO,
     UserResponseDTO,
+    UserSettingsDTO,
 )
 from src.application.use_cases.auth.login_user import LoginUserUseCase
 from src.application.use_cases.auth.register_user import RegisterUserUseCase
@@ -110,5 +111,6 @@ async def get_current_user_info(
         role=current_user.role.value,
         is_active=current_user.is_active,
         full_name=current_user.full_name,
+        settings=UserSettingsDTO(preferred_language=current_user.settings.preferred_language),
         created_at=current_user.created_at,
     )

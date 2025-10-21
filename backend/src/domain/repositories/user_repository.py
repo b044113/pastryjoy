@@ -1,8 +1,10 @@
 """User repository interface."""
 from abc import abstractmethod
 from typing import Optional
+from uuid import UUID
 
 from ..entities.user import User
+from ..value_objects.user_settings import UserSettings
 from .base_repository import IBaseRepository
 
 
@@ -27,4 +29,35 @@ class IUserRepository(IBaseRepository[User]):
     @abstractmethod
     async def username_exists(self, username: str) -> bool:
         """Check if username already exists."""
+        pass
+
+    @abstractmethod
+    async def update_settings(self, user_id: UUID, settings: UserSettings) -> User:
+        """Update user settings.
+
+        Args:
+            user_id: User ID
+            settings: New user settings
+
+        Returns:
+            Updated user entity
+
+        Raises:
+            ValueError: If user not found
+        """
+        pass
+
+    @abstractmethod
+    async def get_settings(self, user_id: UUID) -> UserSettings:
+        """Get user settings.
+
+        Args:
+            user_id: User ID
+
+        Returns:
+            User settings
+
+        Raises:
+            ValueError: If user not found
+        """
         pass

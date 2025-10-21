@@ -44,28 +44,28 @@ describe('DashboardPage', () => {
     it('renders welcome message with user name', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText(/welcome back, Admin User!/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.welcomeBack/i)).toBeInTheDocument();
     });
 
     it('shows admin description message', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText(/manage your bakery operations from here/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.adminSubtitle/i)).toBeInTheDocument();
     });
 
     it('renders all admin navigation cards', async () => {
       renderDashboardPage(true);
 
-      const ingredientsElements = await screen.findAllByText('Ingredients');
+      const ingredientsElements = await screen.findAllByText('dashboard.cards.ingredients.title');
       expect(ingredientsElements.length).toBeGreaterThan(0);
 
-      const recipesElements = screen.getAllByText('Recipes');
+      const recipesElements = screen.getAllByText('dashboard.cards.recipes.title');
       expect(recipesElements.length).toBeGreaterThan(0);
 
-      const productsElements = screen.getAllByText('Products');
+      const productsElements = screen.getAllByText('dashboard.cards.products.title');
       expect(productsElements.length).toBeGreaterThan(0);
 
-      const ordersElements = screen.getAllByText('Orders');
+      const ordersElements = screen.getAllByText('dashboard.cards.orders.title');
       expect(ordersElements.length).toBeGreaterThan(0);
     });
 
@@ -81,19 +81,19 @@ describe('DashboardPage', () => {
     it('renders ingredient card description', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText('Manage your bakery ingredients')).toBeInTheDocument();
+      expect(await screen.findByText('dashboard.cards.ingredients.description')).toBeInTheDocument();
     });
 
     it('renders recipes card description', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText('Create and manage recipes')).toBeInTheDocument();
+      expect(await screen.findByText('dashboard.cards.recipes.description')).toBeInTheDocument();
     });
 
     it('renders products card description', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText('Manage your product catalog')).toBeInTheDocument();
+      expect(await screen.findByText('dashboard.cards.products.description')).toBeInTheDocument();
     });
   });
 
@@ -101,13 +101,13 @@ describe('DashboardPage', () => {
     it('renders welcome message with user name', async () => {
       renderDashboardPage(false);
 
-      expect(await screen.findByText(/welcome back, Regular User!/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.welcomeBack/i)).toBeInTheDocument();
     });
 
     it('shows user description message', async () => {
       renderDashboardPage(false);
 
-      const descriptions = await screen.findAllByText(/view and create orders/i);
+      const descriptions = await screen.findAllByText(/dashboard.userSubtitle/i);
       expect(descriptions.length).toBeGreaterThan(0);
     });
 
@@ -115,19 +115,19 @@ describe('DashboardPage', () => {
       renderDashboardPage(false);
 
       // Orders should be present
-      const ordersElements = await screen.findAllByText('Orders');
+      const ordersElements = await screen.findAllByText('dashboard.cards.orders.title');
       expect(ordersElements.length).toBeGreaterThan(0);
 
       // Admin sections should not be present (they only appear in navbar, not in cards)
-      expect(screen.queryByText('Manage your bakery ingredients')).not.toBeInTheDocument();
-      expect(screen.queryByText('Create and manage recipes')).not.toBeInTheDocument();
-      expect(screen.queryByText('Manage your product catalog')).not.toBeInTheDocument();
+      expect(screen.queryByText('dashboard.cards.ingredients.description')).not.toBeInTheDocument();
+      expect(screen.queryByText('dashboard.cards.recipes.description')).not.toBeInTheDocument();
+      expect(screen.queryByText('dashboard.cards.products.description')).not.toBeInTheDocument();
     });
 
     it('renders orders card description', async () => {
       renderDashboardPage(false);
 
-      const descriptions = await screen.findAllByText('View and create orders');
+      const descriptions = await screen.findAllByText('dashboard.cards.orders.description');
       expect(descriptions.length).toBeGreaterThan(0);
     });
   });
@@ -136,31 +136,31 @@ describe('DashboardPage', () => {
     it('renders quick stats heading', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText('Quick Stats')).toBeInTheDocument();
+      expect(await screen.findByText('dashboard.quickStats')).toBeInTheDocument();
     });
 
     it('renders total orders stat', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText(/total orders/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.totalOrders/i)).toBeInTheDocument();
     });
 
     it('renders active products stat', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText(/active products/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.activeProducts/i)).toBeInTheDocument();
     });
 
     it('renders revenue stat', async () => {
       renderDashboardPage(true);
 
-      expect(await screen.findByText(/revenue/i)).toBeInTheDocument();
+      expect(await screen.findByText(/dashboard.revenue/i)).toBeInTheDocument();
     });
 
     it('shows coming soon message for stats', async () => {
       renderDashboardPage(true);
 
-      const comingSoonMessages = await screen.findAllByText(/coming soon/i);
+      const comingSoonMessages = await screen.findAllByText(/dashboard.comingSoon/i);
       expect(comingSoonMessages).toHaveLength(3);
     });
   });

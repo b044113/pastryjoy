@@ -131,7 +131,7 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      expect(await screen.findByText(/no products yet/i)).toBeInTheDocument();
+      expect(await screen.findByText(/products.noProducts/i)).toBeInTheDocument();
     });
   });
 
@@ -142,8 +142,8 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      expect(await screen.findByRole('heading', { name: /products/i })).toBeInTheDocument();
-      expect(screen.getByText('Manage your product catalog')).toBeInTheDocument();
+      expect(await screen.findByText('products.title')).toBeInTheDocument();
+      expect(screen.getByText('products.subtitle')).toBeInTheDocument();
     });
 
     it('renders all products', async () => {
@@ -162,7 +162,7 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      expect(await screen.findByText('+ Add Product')).toBeInTheDocument();
+      expect(await screen.findByText(/products.addProduct/i)).toBeInTheDocument();
     });
   });
 
@@ -174,10 +174,11 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const addButton = await screen.findByText('+ Add Product');
+      const addButton = await screen.findByText(/products.addProduct/i);
       await user.click(addButton);
 
-      expect(screen.getByRole('heading', { name: /add product/i })).toBeInTheDocument();
+      // The modal title is products.addProduct (not createProduct)
+      expect(screen.getByText('common.cancel')).toBeInTheDocument();
     });
   });
 
@@ -189,10 +190,10 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const editButtons = await screen.findAllByText('Edit');
+      const editButtons = await screen.findAllByText('common.edit');
       await user.click(editButtons[0]);
 
-      expect(screen.getByRole('heading', { name: /edit product/i })).toBeInTheDocument();
+      expect(screen.getByText('products.editProduct')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Sourdough Bread')).toBeInTheDocument();
     });
   });
@@ -206,11 +207,11 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(confirm).toHaveBeenCalledWith('Are you sure you want to delete this product?');
+        expect(confirm).toHaveBeenCalledWith('products.deleteConfirm');
         expect(productService.delete).toHaveBeenCalledWith('1');
       });
     });
@@ -223,7 +224,7 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
@@ -242,16 +243,17 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const addButton = await screen.findByText('+ Add Product');
+      const addButton = await screen.findByText(/products.addProduct/i);
       await user.click(addButton);
 
-      expect(screen.getByRole('heading', { name: /add product/i })).toBeInTheDocument();
+      // Modal should be open
+      expect(screen.getByText('common.cancel')).toBeInTheDocument();
 
-      const cancelButton = screen.getByText('Cancel');
+      const cancelButton = screen.getByText('common.cancel');
       await user.click(cancelButton);
 
       await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /add product/i })).not.toBeInTheDocument();
+        expect(screen.queryByText('common.cancel')).not.toBeInTheDocument();
       });
     });
   });
@@ -267,7 +269,7 @@ describe('ProductsPage', () => {
 
       renderProductsPage();
 
-      const deleteButtons = await screen.findAllByText('Delete');
+      const deleteButtons = await screen.findAllByText('common.delete');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {

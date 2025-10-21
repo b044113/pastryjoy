@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.user import User
 from src.domain.repositories.user_repository import IUserRepository
+from src.domain.value_objects.user_settings import UserSettings
 from src.infrastructure.database.mappers.user_mapper import UserMapper
 from src.infrastructure.database.models.user import UserModel
 
@@ -53,6 +54,7 @@ class UserRepository(IUserRepository):
         model.role = entity.role.value
         model.is_active = entity.is_active
         model.full_name = entity.full_name
+        model.preferred_language = entity.settings.preferred_language
         model.updated_at = entity.updated_at
 
         await self._session.flush()
@@ -102,3 +104,51 @@ class UserRepository(IUserRepository):
         stmt = select(UserModel.id).where(UserModel.username == username)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    async def update_settings(self, user_id: UUID, settings: UserSettings) -> User:
+        """Update user settings.
+
+        Args:
+            user_id: User ID
+            settings: New user settings
+
+        Returns:
+            Updated user entity
+
+        Raises:
+            ValueError: If user not found
+        """
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+
+        if not model:
+            raise ValueError(f"User with id {user_id} not found")
+
+        # Update preferred_language field
+        model.preferred_language = settings.preferred_language
+
+        await self._session.flush()
+        await self._session.refresh(model)
+        return UserMapper.to_entity(model)
+
+    async def get_settings(self, user_id: UUID) -> UserSettings:
+        """Get user settings.
+
+        Args:
+            user_id: User ID
+
+        Returns:
+            User settings
+
+        Raises:
+            ValueError: If user not found
+        """
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+
+        if not model:
+            raise ValueError(f"User with id {user_id} not found")
+
+        return UserSettings(preferred_language=model.preferred_language)

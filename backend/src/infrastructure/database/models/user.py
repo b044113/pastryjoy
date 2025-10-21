@@ -20,6 +20,7 @@ class UserModel(Base):
     role = Column(String(20), nullable=False, default="user")
     is_active = Column(Boolean, nullable=False, default=True)
     full_name = Column(String(255), nullable=True)
+    preferred_language = Column(String(10), nullable=False, default="en")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

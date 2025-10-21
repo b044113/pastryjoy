@@ -1,5 +1,5 @@
 """Register user use case."""
-from src.application.dtos.auth_dto import RegisterRequestDTO, UserResponseDTO
+from src.application.dtos.auth_dto import RegisterRequestDTO, UserResponseDTO, UserSettingsDTO
 from src.domain.entities.user import User
 from src.domain.repositories.user_repository import IUserRepository
 from src.domain.value_objects.user_role import UserRole
@@ -52,5 +52,6 @@ class RegisterUserUseCase:
             role=created_user.role.value,
             is_active=created_user.is_active,
             full_name=created_user.full_name,
+            settings=UserSettingsDTO(preferred_language=created_user.settings.preferred_language),
             created_at=created_user.created_at,
         )

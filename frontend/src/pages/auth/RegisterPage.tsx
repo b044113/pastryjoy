@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -8,6 +9,7 @@ import { Card } from '../../components/common/Card';
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -27,12 +29,12 @@ export const RegisterPage: React.FC = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsNotMatch'));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -47,7 +49,7 @@ export const RegisterPage: React.FC = () => {
       });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed');
+      setError(err.response?.data?.detail || t('auth.registerFailed'));
     } finally {
       setLoading(false);
     }
@@ -58,13 +60,13 @@ export const RegisterPage: React.FC = () => {
       <Card className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🥐</div>
-          <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-2">Join PastryJoy today!</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('auth.createAccount')}</h1>
+          <p className="text-gray-600 mt-2">{t('auth.joinToday')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Email"
+            label={t('auth.email')}
             type="email"
             name="email"
             value={formData.email}
@@ -75,7 +77,7 @@ export const RegisterPage: React.FC = () => {
           />
 
           <Input
-            label="Username"
+            label={t('auth.username')}
             type="text"
             name="username"
             value={formData.username}
@@ -83,11 +85,11 @@ export const RegisterPage: React.FC = () => {
             required
             autoComplete="username"
             disabled={loading}
-            helperText="At least 3 characters"
+            helperText={t('auth.usernameMinLength')}
           />
 
           <Input
-            label="Full Name"
+            label={t('auth.fullName')}
             type="text"
             name="full_name"
             value={formData.full_name}
@@ -96,7 +98,7 @@ export const RegisterPage: React.FC = () => {
           />
 
           <Input
-            label="Password"
+            label={t('auth.password')}
             type="password"
             name="password"
             value={formData.password}
@@ -104,11 +106,11 @@ export const RegisterPage: React.FC = () => {
             required
             autoComplete="new-password"
             disabled={loading}
-            helperText="At least 8 characters"
+            helperText={t('auth.passwordHelper')}
           />
 
           <Input
-            label="Confirm Password"
+            label={t('auth.confirmPassword')}
             type="password"
             name="confirmPassword"
             value={formData.confirmPassword}
@@ -132,18 +134,18 @@ export const RegisterPage: React.FC = () => {
               onClick={() => navigate('/login')}
               disabled={loading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" fullWidth disabled={loading}>
-              {loading ? 'Creating account...' : 'Register'}
+              {loading ? t('auth.registering') : t('auth.register')}
             </Button>
           </div>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('auth.alreadyHaveAccount')}{' '}
           <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-            Login here
+            {t('auth.loginHere')}
           </Link>
         </p>
       </Card>

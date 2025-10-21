@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/layout/Layout';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -11,6 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { Order, Product } from '../../types';
 
 export const OrdersPage: React.FC = () => {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -94,7 +96,7 @@ export const OrdersPage: React.FC = () => {
 
   const handleAddItem = () => {
     if (!selectedProductId || !itemQuantity || !itemPrice) {
-      setError('Please select a product, enter quantity and price');
+      setError(t('orders.selectProductQtyPrice'));
       return;
     }
 
@@ -102,13 +104,13 @@ export const OrdersPage: React.FC = () => {
     const price = parseFloat(itemPrice);
 
     if (quantity <= 0 || price < 0) {
-      setError('Quantity must be greater than 0 and price must be non-negative');
+      setError(t('orders.qtyPriceValidation'));
       return;
     }
 
     // Check if product already added
     if (formData.items.some((item) => item.product_id === selectedProductId)) {
-      setError('Product already added');
+      setError(t('orders.productAlreadyAdded'));
       return;
     }
 
@@ -137,7 +139,7 @@ export const OrdersPage: React.FC = () => {
     setError('');
 
     if (formData.items.length === 0) {
-      setError('Please add at least one item');
+      setError(t('orders.itemsRequired'));
       return;
     }
 
@@ -153,7 +155,7 @@ export const OrdersPage: React.FC = () => {
       await loadData();
       handleCloseModal();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create order');
+      setError(err.response?.data?.detail || t('errors.generic'));
     } finally {
       setSubmitting(false);
     }
@@ -170,26 +172,26 @@ export const OrdersPage: React.FC = () => {
       await loadData();
       handleCloseStatusModal();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to update status');
+      alert(err.response?.data?.detail || t('orders.statusUpdateFailed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this order?')) return;
+    if (!confirm(t('orders.deleteConfirm'))) return;
 
     try {
       await orderService.delete(id);
       await loadData();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete order');
+      alert(err.response?.data?.detail || t('errors.generic'));
     }
   };
 
   const getProductName = (productId: string): string => {
     const product = products.find((prod) => prod.id === productId);
-    return product?.name || 'Unknown';
+    return product?.name || t('orders.unknown');
   };
 
   const getStatusBadgeColor = (status: string): string => {
@@ -223,12 +225,12 @@ export const OrdersPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('orders.title')}</h1>
             <p className="text-gray-600 mt-2">
-              {isAdmin() ? 'Manage all orders' : 'View and create your orders'}
+              {isAdmin() ? t('orders.manageAllOrders') : t('orders.viewYourOrders')}
             </p>
           </div>
-          <Button onClick={handleOpenModal}>+ Create Order</Button>
+          <Button onClick={handleOpenModal}>+ {t('orders.createOrder')}</Button>
         </div>
 
         {orders.length === 0 ? (
@@ -236,12 +238,12 @@ export const OrdersPage: React.FC = () => {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📦</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No orders yet
+                {t('orders.noOrdersYet')}
               </h3>
               <p className="text-gray-600 mb-6">
-                Get started by creating your first order
+                {t('orders.getStarted')}
               </p>
-              <Button onClick={handleOpenModal}>Create First Order</Button>
+              <Button onClick={handleOpenModal}>{t('orders.createFirstOrder')}</Button>
             </div>
           </Card>
         ) : (
@@ -259,13 +261,13 @@ export const OrdersPage: React.FC = () => {
                           order.status
                         )}`}
                       >
-                        {order.status.replace('_', ' ').toUpperCase()}
+                        {t(`orders.statuses.${order.status}`)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">{order.customer_email}</p>
                     {order.notes && (
                       <p className="text-sm text-gray-500 mt-1 italic">
-                        Note: {order.notes}
+                        {t('orders.note')}: {order.notes}
                       </p>
                     )}
                   </div>
@@ -282,7 +284,7 @@ export const OrdersPage: React.FC = () => {
                 {/* Order Items */}
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    Items ({order.items.length}):
+                    {t('orders.items')} ({order.items.length}):
                   </p>
                   <div className="space-y-1">
                     {order.items.map((item) => (
@@ -291,7 +293,7 @@ export const OrdersPage: React.FC = () => {
                         className="flex justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded"
                       >
                         <span>
-                          {item.product_name || 'Product'} × {item.quantity}
+                          {item.product_name || t('products.product')} × {item.quantity}
                         </span>
                         <span className="font-medium">
                           ${item.total.toFixed(2)}
@@ -310,14 +312,14 @@ export const OrdersPage: React.FC = () => {
                         size="sm"
                         onClick={() => handleOpenStatusModal(order)}
                       >
-                        Update Status
+                        {t('orders.updateStatus')}
                       </Button>
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={() => handleDelete(order.id)}
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </>
                   )}
@@ -327,7 +329,7 @@ export const OrdersPage: React.FC = () => {
                       size="sm"
                       onClick={() => handleDelete(order.id)}
                     >
-                      Cancel Order
+                      {t('orders.cancelOrder')}
                     </Button>
                   )}
                 </div>
@@ -340,22 +342,22 @@ export const OrdersPage: React.FC = () => {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title="Create Order"
+          title={t('orders.createOrder')}
           size="lg"
           footer={
             <>
               <Button variant="secondary" onClick={handleCloseModal}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Creating...' : 'Create Order'}
+                {submitting ? t('orders.creating') : t('orders.createOrder')}
               </Button>
             </>
           }
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Customer Name"
+              label={t('orders.customerName')}
               value={formData.customer_name}
               onChange={(e) =>
                 setFormData({ ...formData, customer_name: e.target.value })
@@ -365,7 +367,7 @@ export const OrdersPage: React.FC = () => {
             />
 
             <Input
-              label="Customer Email"
+              label={t('orders.customerEmail')}
               type="email"
               value={formData.customer_email}
               onChange={(e) =>
@@ -377,7 +379,7 @@ export const OrdersPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
+                {t('orders.notes')}
               </label>
               <textarea
                 value={formData.notes}
@@ -393,7 +395,7 @@ export const OrdersPage: React.FC = () => {
             {/* Add Items Section */}
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium text-gray-900 mb-3">
-                Order Items
+                {t('orders.orderItems')}
               </h4>
 
               <div className="flex gap-2 mb-3">
@@ -403,7 +405,7 @@ export const OrdersPage: React.FC = () => {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   disabled={submitting}
                 >
-                  <option value="">Select product...</option>
+                  <option value="">{t('orders.selectProduct')}</option>
                   {products.map((prod) => (
                     <option key={prod.id} value={prod.id}>
                       {prod.name}
@@ -414,7 +416,7 @@ export const OrdersPage: React.FC = () => {
                 <Input
                   type="number"
                   step="0.001"
-                  placeholder="Qty"
+                  placeholder={t('products.qty')}
                   value={itemQuantity}
                   onChange={(e) => setItemQuantity(e.target.value)}
                   disabled={submitting}
@@ -424,7 +426,7 @@ export const OrdersPage: React.FC = () => {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Price"
+                  placeholder={t('common.price')}
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
                   disabled={submitting}
@@ -437,7 +439,7 @@ export const OrdersPage: React.FC = () => {
                   onClick={handleAddItem}
                   disabled={submitting}
                 >
-                  Add
+                  {t('orders.add')}
                 </Button>
               </div>
 
@@ -460,13 +462,13 @@ export const OrdersPage: React.FC = () => {
                         className="text-red-600 hover:text-red-700 text-sm"
                         disabled={submitting}
                       >
-                        Remove
+                        {t('orders.remove')}
                       </button>
                     </div>
                   ))}
 
                   <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="font-medium text-gray-900">Total:</span>
+                    <span className="font-medium text-gray-900">{t('common.total')}:</span>
                     <span className="text-xl font-bold text-primary-600">
                       ${calculateOrderTotal().toFixed(2)}
                     </span>
@@ -476,7 +478,7 @@ export const OrdersPage: React.FC = () => {
 
               {formData.items.length === 0 && (
                 <p className="text-sm text-gray-500 italic">
-                  No items added yet
+                  {t('orders.noItemsYet')}
                 </p>
               )}
             </div>
@@ -493,25 +495,25 @@ export const OrdersPage: React.FC = () => {
         <Modal
           isOpen={isStatusModalOpen}
           onClose={handleCloseStatusModal}
-          title="Update Order Status"
+          title={t('orders.updateOrderStatus')}
           footer={
             <>
               <Button variant="secondary" onClick={handleCloseStatusModal}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleUpdateStatus} disabled={submitting}>
-                {submitting ? 'Updating...' : 'Update'}
+                {submitting ? t('orders.updating') : t('orders.updateStatus')}
               </Button>
             </>
           }
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Order: {selectedOrder?.customer_name}
+              {t('orders.order')}: {selectedOrder?.customer_name}
             </p>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
+                {t('common.status')}
               </label>
               <select
                 value={statusUpdate}
@@ -519,11 +521,11 @@ export const OrdersPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 disabled={submitting}
               >
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="pending">{t('orders.statuses.pending')}</option>
+                <option value="confirmed">{t('orders.statuses.confirmed')}</option>
+                <option value="in_progress">{t('orders.statuses.in_progress')}</option>
+                <option value="completed">{t('orders.statuses.completed')}</option>
+                <option value="cancelled">{t('orders.statuses.cancelled')}</option>
               </select>
             </div>
           </div>

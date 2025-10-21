@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/layout/Layout';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -10,6 +11,7 @@ import { recipeService } from '../../services/recipe.service';
 import type { Product, Recipe } from '../../types';
 
 export const ProductsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,19 +100,19 @@ export const ProductsPage: React.FC = () => {
 
   const handleAddRecipe = () => {
     if (!selectedRecipeId || !recipeQuantity) {
-      setError('Please select a recipe and enter quantity');
+      setError(t('products.selectRecipeQty'));
       return;
     }
 
     const quantity = parseFloat(recipeQuantity);
     if (quantity <= 0) {
-      setError('Quantity must be greater than 0');
+      setError(t('products.quantityPositive'));
       return;
     }
 
     // Check if recipe already added
     if (formData.recipes.some((rec) => rec.recipe_id === selectedRecipeId)) {
-      setError('Recipe already added');
+      setError(t('products.recipeAlreadyAdded'));
       return;
     }
 
@@ -139,17 +141,17 @@ export const ProductsPage: React.FC = () => {
     const profitMargin = parseFloat(formData.profit_margin_percentage);
 
     if (isNaN(fixedCosts) || fixedCosts < 0) {
-      setError('Fixed costs must be a valid positive number');
+      setError(t('products.fixedCostsInvalid'));
       return;
     }
 
     if (isNaN(variableCosts) || variableCosts < 0 || variableCosts > 100) {
-      setError('Variable costs percentage must be between 0 and 100');
+      setError(t('products.variableCostsInvalid'));
       return;
     }
 
     if (isNaN(profitMargin) || profitMargin < 0) {
-      setError('Profit margin percentage must be a valid positive number');
+      setError(t('products.profitMarginInvalid'));
       return;
     }
 
@@ -178,26 +180,26 @@ export const ProductsPage: React.FC = () => {
       await loadData();
       handleCloseModal();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to save product');
+      setError(err.response?.data?.detail || t('products.saveError'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm(t('products.deleteConfirm'))) return;
 
     try {
       await productService.delete(id);
       await loadData();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete product');
+      alert(err.response?.data?.detail || t('products.deleteError'));
     }
   };
 
   const getRecipeName = (recipeId: string): string => {
     const recipe = recipes.find((rec) => rec.id === recipeId);
-    return recipe?.name || 'Unknown';
+    return recipe?.name || t('products.unknown');
   };
 
   if (loading) return <Loading fullScreen />;
@@ -207,10 +209,10 @@ export const ProductsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-600 mt-2">Manage your product catalog</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('products.title')}</h1>
+            <p className="text-gray-600 mt-2">{t('products.subtitle')}</p>
           </div>
-          <Button onClick={() => handleOpenModal()}>+ Add Product</Button>
+          <Button onClick={() => handleOpenModal()}>+ {t('products.addProduct')}</Button>
         </div>
 
         {products.length === 0 ? (
@@ -218,12 +220,12 @@ export const ProductsPage: React.FC = () => {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎂</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No products yet
+                {t('products.noProducts')}
               </h3>
               <p className="text-gray-600 mb-6">
-                Get started by adding your first product
+                {t('products.getStarted')}
               </p>
-              <Button onClick={() => handleOpenModal()}>Add First Product</Button>
+              <Button onClick={() => handleOpenModal()}>{t('products.addFirstProduct')}</Button>
             </div>
           </Card>
         ) : (
@@ -245,24 +247,24 @@ export const ProductsPage: React.FC = () => {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Fixed Costs:</span>
+                    <span className="text-gray-600">{t('products.fixedCosts')}:</span>
                     <span className="font-medium">${product.fixed_costs}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Variable Costs:</span>
+                    <span className="text-gray-600">{t('products.variableCosts')}:</span>
                     <span className="font-medium">
                       {product.variable_costs_percentage}%
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Profit Margin:</span>
+                    <span className="text-gray-600">{t('products.profitMargin')}:</span>
                     <span className="font-medium">
                       {product.profit_margin_percentage}%
                     </span>
                   </div>
                   <div className="pt-2 border-t">
                     <span className="text-gray-600">
-                      Recipes: {product.recipes.length}
+                      {t('products.recipes')}: {product.recipes.length}
                     </span>
                   </div>
                 </div>
@@ -274,7 +276,7 @@ export const ProductsPage: React.FC = () => {
                     onClick={() => handleOpenModal(product)}
                     className="flex-1"
                   >
-                    Edit
+                    {t('common.edit')}
                   </Button>
                   <Button
                     variant="danger"
@@ -282,7 +284,7 @@ export const ProductsPage: React.FC = () => {
                     onClick={() => handleDelete(product.id)}
                     className="flex-1"
                   >
-                    Delete
+                    {t('common.delete')}
                   </Button>
                 </div>
               </Card>
@@ -294,22 +296,22 @@ export const ProductsPage: React.FC = () => {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={editingProduct ? 'Edit Product' : 'Add Product'}
+          title={editingProduct ? t('products.editProduct') : t('products.addProduct')}
           size="lg"
           footer={
             <>
               <Button variant="secondary" onClick={handleCloseModal}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Saving...' : 'Save'}
+                {submitting ? t('products.saving') : t('common.save')}
               </Button>
             </>
           }
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Name"
+              label={t('common.name')}
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -319,19 +321,19 @@ export const ProductsPage: React.FC = () => {
             />
 
             <Input
-              label="Image URL"
+              label={t('products.imageUrl')}
               type="url"
               value={formData.image_url}
               onChange={(e) =>
                 setFormData({ ...formData, image_url: e.target.value })
               }
               disabled={submitting}
-              helperText="Optional: URL to product image"
+              helperText={t('products.imageUrlHelper')}
             />
 
             <div className="grid grid-cols-3 gap-4">
               <Input
-                label="Fixed Costs ($)"
+                label={t('products.fixedCostsDollar')}
                 type="number"
                 step="0.01"
                 value={formData.fixed_costs}
@@ -343,7 +345,7 @@ export const ProductsPage: React.FC = () => {
               />
 
               <Input
-                label="Variable Costs (%)"
+                label={t('products.variableCostsPercent')}
                 type="number"
                 step="0.01"
                 value={formData.variable_costs_percentage}
@@ -358,7 +360,7 @@ export const ProductsPage: React.FC = () => {
               />
 
               <Input
-                label="Profit Margin (%)"
+                label={t('products.profitMarginPercent')}
                 type="number"
                 step="0.01"
                 value={formData.profit_margin_percentage}
@@ -375,7 +377,7 @@ export const ProductsPage: React.FC = () => {
 
             {/* Add Recipes Section */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Recipes</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('products.recipes')}</h4>
 
               <div className="flex gap-2 mb-3">
                 <select
@@ -384,7 +386,7 @@ export const ProductsPage: React.FC = () => {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   disabled={submitting}
                 >
-                  <option value="">Select recipe...</option>
+                  <option value="">{t('products.selectRecipe')}</option>
                   {recipes.map((rec) => (
                     <option key={rec.id} value={rec.id}>
                       {rec.name}
@@ -395,7 +397,7 @@ export const ProductsPage: React.FC = () => {
                 <Input
                   type="number"
                   step="0.001"
-                  placeholder="Quantity"
+                  placeholder={t('common.quantity')}
                   value={recipeQuantity}
                   onChange={(e) => setRecipeQuantity(e.target.value)}
                   disabled={submitting}
@@ -408,7 +410,7 @@ export const ProductsPage: React.FC = () => {
                   onClick={handleAddRecipe}
                   disabled={submitting}
                 >
-                  Add
+                  {t('products.add')}
                 </Button>
               </div>
 
@@ -421,7 +423,7 @@ export const ProductsPage: React.FC = () => {
                       className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg"
                     >
                       <span className="text-sm">
-                        {getRecipeName(rec.recipe_id)} - Qty: {rec.quantity}
+                        {getRecipeName(rec.recipe_id)} - {t('products.qty')}: {rec.quantity}
                       </span>
                       <button
                         type="button"
@@ -429,7 +431,7 @@ export const ProductsPage: React.FC = () => {
                         className="text-red-600 hover:text-red-700 text-sm"
                         disabled={submitting}
                       >
-                        Remove
+                        {t('products.remove')}
                       </button>
                     </div>
                   ))}
@@ -438,7 +440,7 @@ export const ProductsPage: React.FC = () => {
 
               {formData.recipes.length === 0 && (
                 <p className="text-sm text-gray-500 italic">
-                  No recipes added yet
+                  {t('products.noRecipes')}
                 </p>
               )}
             </div>

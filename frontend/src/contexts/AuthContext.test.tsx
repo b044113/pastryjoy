@@ -17,16 +17,18 @@ vi.mock('../services/auth.service', () => ({
 
 // Test component that uses the auth context
 const TestComponent = () => {
-  const { user, loading, login, register, logout, isAdmin } = useAuth();
+  const { user, loading, login, register, logout, isAdmin, updateUserSettings } = useAuth();
 
   return (
     <div>
       <div data-testid="loading">{loading ? 'loading' : 'loaded'}</div>
       <div data-testid="user">{user ? user.username : 'no user'}</div>
       <div data-testid="is-admin">{isAdmin() ? 'admin' : 'not admin'}</div>
+      <div data-testid="user-language">{user?.settings?.preferred_language || 'none'}</div>
       <button onClick={() => login({ username: 'test', password: 'pass' })}>Login</button>
       <button onClick={() => register({ username: 'new', password: 'pass', email: 'test@test.com' })}>Register</button>
       <button onClick={logout}>Logout</button>
+      <button onClick={() => updateUserSettings({ preferred_language: 'es' })}>Update Settings</button>
     </div>
   );
 };
@@ -229,6 +231,128 @@ describe('AuthContext', () => {
       });
 
       expect(authService.clearToken).toHaveBeenCalled();
+    });
+
+    it('updates user settings when updateUserSettings is called', async () => {
+      const mockUser = {
+        id: '1',
+        username: 'testuser',
+        email: 'test@example.com',
+        role: 'user' as const,
+        settings: { preferred_language: 'en' as const },
+      };
+
+      vi.mocked(authService.isAuthenticated).mockReturnValue(true);
+      vi.mocked(authService.getCurrentUser).mockResolvedValue(mockUser);
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user')).toHaveTextContent('testuser');
+      });
+
+      // Initial language should be 'en'
+      expect(screen.getByTestId('user-language')).toHaveTextContent('en');
+
+      // Update settings
+      const updateButton = screen.getByText('Update Settings');
+      updateButton.click();
+
+      // Language should be updated to 'es'
+      await waitFor(() => {
+        expect(screen.getByTestId('user-language')).toHaveTextContent('es');
+      });
+    });
+
+    it('updateUserSettings does nothing when user is null', async () => {
+      vi.mocked(authService.isAuthenticated).mockReturnValue(false);
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading')).toHaveTextContent('loaded');
+      });
+
+      // Try to update settings when no user is logged in
+      const updateButton = screen.getByText('Update Settings');
+      updateButton.click();
+
+      // Language should still be 'none'
+      expect(screen.getByTestId('user-language')).toHaveTextContent('none');
+    });
+
+    it('updateUserSettings saves to localStorage', async () => {
+      const mockUser = {
+        id: '1',
+        username: 'testuser',
+        email: 'test@example.com',
+        role: 'user' as const,
+        settings: { preferred_language: 'en' as const },
+      };
+
+      vi.mocked(authService.isAuthenticated).mockReturnValue(true);
+      vi.mocked(authService.getCurrentUser).mockResolvedValue(mockUser);
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user')).toHaveTextContent('testuser');
+      });
+
+      // Update settings
+      const updateButton = screen.getByText('Update Settings');
+      updateButton.click();
+
+      // Check localStorage was updated
+      await waitFor(() => {
+        const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        expect(savedUser.settings.preferred_language).toBe('es');
+      });
+    });
+
+    it('updateUserSettings preserves other user properties', async () => {
+      const mockUser = {
+        id: '1',
+        username: 'testuser',
+        email: 'test@example.com',
+        role: 'user' as const,
+        full_name: 'Test User',
+        settings: { preferred_language: 'en' as const },
+      };
+
+      vi.mocked(authService.isAuthenticated).mockReturnValue(true);
+      vi.mocked(authService.getCurrentUser).mockResolvedValue(mockUser);
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user')).toHaveTextContent('testuser');
+      });
+
+      // Update settings
+      const updateButton = screen.getByText('Update Settings');
+      updateButton.click();
+
+      // User properties should still be there
+      await waitFor(() => {
+        expect(screen.getByTestId('user')).toHaveTextContent('testuser');
+      });
     });
   });
 });

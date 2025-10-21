@@ -1,4 +1,8 @@
 // Auth types
+export interface UserSettings {
+  preferred_language: 'en' | 'es';
+}
+
 export interface User {
   id: string;
   email: string;
@@ -6,6 +10,7 @@ export interface User {
   role: 'admin' | 'user';
   is_active: boolean;
   full_name: string | null;
+  settings: UserSettings;
   created_at: string;
 }
 
@@ -24,6 +29,10 @@ export interface RegisterRequest {
 export interface TokenResponse {
   access_token: string;
   token_type: string;
+}
+
+export interface UpdateUserSettingsRequest {
+  preferred_language: 'en' | 'es';
 }
 
 // Ingredient types
@@ -113,6 +122,10 @@ export interface ProductUpdate {
   fixed_costs?: number;
   variable_costs_percentage?: number;
   profit_margin_percentage?: number;
+  recipes?: {
+    recipe_id: string;
+    quantity: number;
+  }[];
 }
 
 // Order types

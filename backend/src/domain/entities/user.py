@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from ..value_objects.user_role import UserRole
+from ..value_objects.user_settings import UserSettings
 from .base import BaseEntity
 
 
@@ -16,6 +17,7 @@ class User(BaseEntity):
     role: UserRole = field(default=UserRole.USER)
     is_active: bool = True
     full_name: Optional[str] = None
+    settings: UserSettings = field(default_factory=UserSettings.default)
 
     def __post_init__(self) -> None:
         """Validate user data."""
@@ -45,3 +47,11 @@ class User(BaseEntity):
     def can_create_orders(self) -> bool:
         """Check if user can create orders."""
         return self.role.can_create_orders
+
+    def update_settings(self, settings: UserSettings) -> None:
+        """Update user settings.
+
+        Args:
+            settings: New user settings
+        """
+        self.settings = settings
