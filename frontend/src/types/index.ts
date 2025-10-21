@@ -83,6 +83,10 @@ export interface RecipeCreate {
 export interface RecipeUpdate {
   name?: string;
   instructions?: string;
+  ingredients?: {
+    ingredient_id: string;
+    quantity: number;
+  }[];
 }
 
 // Product types

@@ -30,6 +30,7 @@ vi.mock('../../services/recipe.service', () => ({
 vi.mock('../../services/ingredient.service', () => ({
   ingredientService: {
     getAll: vi.fn(),
+    create: vi.fn(),
   },
 }));
 
@@ -275,6 +276,133 @@ describe('RecipesPage', () => {
 
       await waitFor(() => {
         expect(alert).toHaveBeenCalledWith('Cannot delete recipe in use');
+      });
+    });
+  });
+
+  describe('Create New Ingredient', () => {
+    it('shows "New" button in add ingredients section', async () => {
+      vi.mocked(recipeService.getAll).mockResolvedValue(mockRecipes);
+      vi.mocked(ingredientService.getAll).mockResolvedValue(mockIngredients);
+      const user = userEvent.setup();
+
+      renderRecipesPage();
+
+      // Open create recipe modal
+      const addButton = await screen.findByText(/recipes.createRecipe/i);
+      await user.click(addButton);
+
+      // Check for "New" button
+      expect(screen.getByText('common.new')).toBeInTheDocument();
+    });
+
+    it('opens ingredient modal when "New" button is clicked', async () => {
+      vi.mocked(recipeService.getAll).mockResolvedValue(mockRecipes);
+      vi.mocked(ingredientService.getAll).mockResolvedValue(mockIngredients);
+      const user = userEvent.setup();
+
+      renderRecipesPage();
+
+      // Open create recipe modal
+      const addButton = await screen.findByText(/recipes.createRecipe/i);
+      await user.click(addButton);
+
+      // Click "New" button
+      const newButton = screen.getByText('common.new');
+      await user.click(newButton);
+
+      // Check that ingredient modal is open
+      expect(screen.getAllByText('ingredients.createIngredient')[0]).toBeInTheDocument();
+    });
+
+    it('ingredient modal has name input and unit selector', async () => {
+      vi.mocked(recipeService.getAll).mockResolvedValue(mockRecipes);
+      vi.mocked(ingredientService.getAll).mockResolvedValue(mockIngredients);
+      const user = userEvent.setup();
+
+      renderRecipesPage();
+
+      // Open create recipe modal
+      const addButton = await screen.findByText(/recipes.createRecipe/i);
+      await user.click(addButton);
+
+      // Click "New" button
+      const newButton = screen.getByText('common.new');
+      await user.click(newButton);
+
+      // Wait for ingredient modal to appear
+      await waitFor(() => {
+        expect(screen.getAllByText('ingredients.createIngredient').length).toBeGreaterThan(0);
+      });
+
+      // Verify the ingredient modal has the required fields
+      const nameInputs = screen.getAllByLabelText(/common.name/i);
+      expect(nameInputs.length).toBeGreaterThan(0);
+
+      // Check for unit selector
+      expect(screen.getByText('ingredients.units.kg')).toBeInTheDocument();
+    });
+
+    it('closes ingredient modal when cancel is clicked', async () => {
+      vi.mocked(recipeService.getAll).mockResolvedValue(mockRecipes);
+      vi.mocked(ingredientService.getAll).mockResolvedValue(mockIngredients);
+      const user = userEvent.setup();
+
+      renderRecipesPage();
+
+      // Open create recipe modal
+      const addButton = await screen.findByText(/recipes.createRecipe/i);
+      await user.click(addButton);
+
+      // Click "New" button
+      const newButton = screen.getByText('common.new');
+      await user.click(newButton);
+
+      // Click cancel on ingredient modal
+      const cancelButtons = screen.getAllByText('common.cancel');
+      await user.click(cancelButtons[cancelButtons.length - 1]); // Click the last "Cancel" button
+
+      await waitFor(() => {
+        // Ingredient modal should be closed, but recipe modal still open
+        expect(screen.getAllByText('common.cancel').length).toBe(1);
+      });
+    });
+
+    it('shows error when ingredient creation fails', async () => {
+      vi.mocked(recipeService.getAll).mockResolvedValue(mockRecipes);
+      vi.mocked(ingredientService.getAll).mockResolvedValue(mockIngredients);
+      vi.mocked(ingredientService.create).mockRejectedValue({
+        response: { data: { detail: 'Ingredient already exists' } },
+      });
+      const user = userEvent.setup();
+
+      renderRecipesPage();
+
+      // Open create recipe modal
+      const addButton = await screen.findByText(/recipes.createRecipe/i);
+      await user.click(addButton);
+
+      // Click "New" button
+      const newButton = screen.getByText('common.new');
+      await user.click(newButton);
+
+      // Wait for ingredient modal to appear
+      await waitFor(() => {
+        expect(screen.getAllByText('ingredients.createIngredient').length).toBeGreaterThan(0);
+      });
+
+      // Fill in ingredient form - get all name inputs and use the last one (ingredient modal)
+      const nameInputs = screen.getAllByLabelText(/common.name/i);
+      const ingredientNameInput = nameInputs[nameInputs.length - 1];
+      await user.clear(ingredientNameInput);
+      await user.type(ingredientNameInput, 'Flour');
+
+      // Submit ingredient form
+      const saveButtons = screen.getAllByText('common.save');
+      await user.click(saveButtons[saveButtons.length - 1]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Ingredient already exists')).toBeInTheDocument();
       });
     });
   });

@@ -20,7 +20,12 @@
     "close": "Cerrar",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "and": "y",
+    "unknown": "Desconocido",
+    "more": "más...",
+    "add": "Agregar",
+    "new": "Nuevo"
   },
   "nav": {
     "dashboard": "Inicio",
@@ -124,7 +129,10 @@
       "g": "Gramo (g)",
       "l": "Litro (L)",
       "ml": "Mililitro (mL)",
-      "unit": "Unidad"
+      "unit": "Unidad",
+      "tbsp": "Cucharada (cdta)",
+      "tsp": "Cucharadita (cdita)",
+      "cup": "Taza"
     },
     "selectUnit": "Selecciona una unidad",
     "nameRequired": "El nombre es obligatorio",
@@ -139,7 +147,7 @@
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta receta?",
     "instructions": "Instrucciones",
     "ingredients": "Ingredientes",
-    "addIngredient": "Agregar Ingrediente",
+    "addIngredient": "Agregar",
     "selectIngredient": "Selecciona un ingrediente",
     "ingredientRequired": "Por favor selecciona un ingrediente",
     "quantityRequired": "La cantidad es obligatoria",

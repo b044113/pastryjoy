@@ -29,6 +29,12 @@ export const RecipesPage: React.FC = () => {
   const [selectedIngredientId, setSelectedIngredientId] = useState('');
   const [ingredientQuantity, setIngredientQuantity] = useState('');
 
+  // For creating new ingredients
+  const [isIngredientModalOpen, setIsIngredientModalOpen] = useState(false);
+  const [ingredientFormData, setIngredientFormData] = useState({ name: '', unit: 'kg' });
+  const [ingredientError, setIngredientError] = useState('');
+  const [ingredientSubmitting, setIngredientSubmitting] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -117,6 +123,38 @@ export const RecipesPage: React.FC = () => {
     });
   };
 
+  const handleOpenIngredientModal = () => {
+    setIngredientFormData({ name: '', unit: 'kg' });
+    setIngredientError('');
+    setIsIngredientModalOpen(true);
+  };
+
+  const handleCloseIngredientModal = () => {
+    setIsIngredientModalOpen(false);
+    setIngredientFormData({ name: '', unit: 'kg' });
+    setIngredientError('');
+  };
+
+  const handleIngredientSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIngredientError('');
+    setIngredientSubmitting(true);
+
+    try {
+      const newIngredient = await ingredientService.create(ingredientFormData);
+      // Refresh ingredients list
+      const ingredientsData = await ingredientService.getAll();
+      setIngredients(ingredientsData);
+      // Auto-select the newly created ingredient
+      setSelectedIngredientId(newIngredient.id);
+      handleCloseIngredientModal();
+    } catch (err: any) {
+      setIngredientError(err.response?.data?.detail || t('errors.generic'));
+    } finally {
+      setIngredientSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -133,6 +171,7 @@ export const RecipesPage: React.FC = () => {
         await recipeService.update(editingRecipe.id, {
           name: formData.name,
           instructions: formData.instructions || undefined,
+          ingredients: formData.ingredients,
         });
       } else {
         await recipeService.create({
@@ -326,16 +365,24 @@ export const RecipesPage: React.FC = () => {
                   value={ingredientQuantity}
                   onChange={(e) => setIngredientQuantity(e.target.value)}
                   disabled={submitting}
-                  className="w-32"
+                  className="w-24"
                 />
 
                 <Button
                   type="button"
-                  variant="secondary"
                   onClick={handleAddIngredient}
                   disabled={submitting}
                 >
-                  {t('recipes.addIngredient')}
+                  {t('common.add')}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleOpenIngredientModal}
+                  disabled={submitting}
+                >
+                  {t('common.new')}
                 </Button>
               </div>
 
@@ -374,6 +421,61 @@ export const RecipesPage: React.FC = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
+              </div>
+            )}
+          </form>
+        </Modal>
+
+        {/* Create Ingredient Modal */}
+        <Modal
+          isOpen={isIngredientModalOpen}
+          onClose={handleCloseIngredientModal}
+          title={t('ingredients.createIngredient')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={handleCloseIngredientModal}>
+                {t('common.cancel')}
+              </Button>
+              <Button onClick={handleIngredientSubmit} disabled={ingredientSubmitting}>
+                {ingredientSubmitting ? t('common.loading') : t('common.save')}
+              </Button>
+            </>
+          }
+        >
+          <form onSubmit={handleIngredientSubmit} className="space-y-4">
+            <Input
+              label={t('common.name')}
+              value={ingredientFormData.name}
+              onChange={(e) => setIngredientFormData({ ...ingredientFormData, name: e.target.value })}
+              required
+              disabled={ingredientSubmitting}
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('ingredients.unit')} <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={ingredientFormData.unit}
+                onChange={(e) => setIngredientFormData({ ...ingredientFormData, unit: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+                disabled={ingredientSubmitting}
+              >
+                <option value="kg">{t('ingredients.units.kg')}</option>
+                <option value="g">{t('ingredients.units.g')}</option>
+                <option value="l">{t('ingredients.units.l')}</option>
+                <option value="ml">{t('ingredients.units.ml')}</option>
+                <option value="unit">{t('ingredients.units.unit')}</option>
+                <option value="tbsp">{t('ingredients.units.tbsp')}</option>
+                <option value="tsp">{t('ingredients.units.tsp')}</option>
+                <option value="cup">{t('ingredients.units.cup')}</option>
+              </select>
+            </div>
+
+            {ingredientError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {ingredientError}
               </div>
             )}
           </form>

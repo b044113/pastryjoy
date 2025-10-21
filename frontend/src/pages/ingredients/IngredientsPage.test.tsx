@@ -120,13 +120,10 @@ describe('IngredientsPage', () => {
       // Wait for ingredients to load and verify unit values are displayed
       await screen.findByText('Flour');
 
-      // The component displays "ingredients.unit: kg" for kg units
-      const paragraphs = screen.getAllByText((content, element) => {
-        return element?.tagName.toLowerCase() === 'p' && (
-          content.includes('kg') || content.includes('unit')
-        );
-      });
-      expect(paragraphs.length).toBeGreaterThan(0);
+      // In table structure, units are displayed as plain text in table cells
+      const kgCells = screen.getAllByText('kg');
+      const unitCells = screen.getAllByText('unit');
+      expect(kgCells.length + unitCells.length).toBeGreaterThan(0);
     });
 
     it('renders edit and delete buttons for each ingredient', async () => {
@@ -135,8 +132,9 @@ describe('IngredientsPage', () => {
       renderIngredientsPage();
 
       await waitFor(() => {
-        expect(screen.getAllByText('common.edit')).toHaveLength(3);
-        expect(screen.getAllByText('common.delete')).toHaveLength(3);
+        // Buttons now use aria-label instead of text
+        expect(screen.getAllByLabelText('ingredients.editIngredient')).toHaveLength(3);
+        expect(screen.getAllByLabelText('ingredients.deleteIngredient')).toHaveLength(3);
       });
     });
 
@@ -201,7 +199,7 @@ describe('IngredientsPage', () => {
 
       renderIngredientsPage();
 
-      const editButtons = await screen.findAllByText('common.edit');
+      const editButtons = await screen.findAllByLabelText('ingredients.editIngredient');
       await user.click(editButtons[0]);
 
       expect(screen.getByText('ingredients.editIngredient')).toBeInTheDocument();
@@ -219,7 +217,7 @@ describe('IngredientsPage', () => {
 
       renderIngredientsPage();
 
-      const editButtons = await screen.findAllByText('common.edit');
+      const editButtons = await screen.findAllByLabelText('ingredients.editIngredient');
       await user.click(editButtons[0]);
 
       const nameInput = screen.getByDisplayValue('Flour');
@@ -246,7 +244,7 @@ describe('IngredientsPage', () => {
 
       renderIngredientsPage();
 
-      const deleteButtons = await screen.findAllByText('common.delete');
+      const deleteButtons = await screen.findAllByLabelText('ingredients.deleteIngredient');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
@@ -262,7 +260,7 @@ describe('IngredientsPage', () => {
 
       renderIngredientsPage();
 
-      const deleteButtons = await screen.findAllByText('common.delete');
+      const deleteButtons = await screen.findAllByLabelText('ingredients.deleteIngredient');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
@@ -351,7 +349,7 @@ describe('IngredientsPage', () => {
 
       renderIngredientsPage();
 
-      const deleteButtons = await screen.findAllByText('common.delete');
+      const deleteButtons = await screen.findAllByLabelText('ingredients.deleteIngredient');
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {

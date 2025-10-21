@@ -23,7 +23,9 @@
     "no": "No",
     "and": "and",
     "unknown": "Unknown",
-    "more": "more..."
+    "more": "more...",
+    "add": "Add",
+    "new": "New"
   },
   "nav": {
     "dashboard": "Home",

@@ -231,6 +231,20 @@ async def update_recipe(
     if dto.instructions is not None:
         recipe.instructions = dto.instructions
 
+    # Update ingredients if provided
+    if dto.ingredients is not None:
+        # Clear existing ingredients
+        recipe.ingredients = []
+
+        # Add new ingredients
+        for ingredient_dto in dto.ingredients:
+            recipe_ingredient = RecipeIngredient(
+                recipe_id=recipe.id,
+                ingredient_id=ingredient_dto.ingredient_id,
+                quantity=ingredient_dto.quantity,
+            )
+            recipe.ingredients.append(recipe_ingredient)
+
     # Save changes
     updated = await repo.update(recipe)
 
