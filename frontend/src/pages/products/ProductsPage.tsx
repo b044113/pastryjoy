@@ -229,47 +229,49 @@ export const ProductsPage: React.FC = () => {
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {products.map((product) => (
-              <Card key={product.id} className="hover:shadow-lg transition-shadow">
-                <div className="mb-4">
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-40 object-cover rounded-lg mb-3"
-                    />
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {product.name}
-                  </h3>
+              <Card key={product.id} className="hover:shadow-lg transition-shadow flex flex-col">
+                <div className="flex-1 min-h-0">
+                  <div className="mb-4">
+                    {product.image_url && (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-40 object-cover rounded-lg mb-3"
+                      />
+                    )}
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {product.name}
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{t('products.fixedCosts')}:</span>
+                      <span className="font-medium">${product.fixed_costs}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{t('products.variableCosts')}:</span>
+                      <span className="font-medium">
+                        {product.variable_costs_percentage}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{t('products.profitMargin')}:</span>
+                      <span className="font-medium">
+                        {product.profit_margin_percentage}%
+                      </span>
+                    </div>
+                    <div className="pt-2 border-t">
+                      <span className="text-gray-600">
+                        {t('products.recipes')}: {product.recipes.length}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('products.fixedCosts')}:</span>
-                    <span className="font-medium">${product.fixed_costs}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('products.variableCosts')}:</span>
-                    <span className="font-medium">
-                      {product.variable_costs_percentage}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('products.profitMargin')}:</span>
-                    <span className="font-medium">
-                      {product.profit_margin_percentage}%
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t">
-                    <span className="text-gray-600">
-                      {t('products.recipes')}: {product.recipes.length}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
                   <Button
                     variant="secondary"
                     size="sm"

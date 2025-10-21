@@ -249,62 +249,64 @@ export const OrdersPage: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <Card key={order.id} className="hover:shadow-lg transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {order.customer_name}
-                      </h3>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
-                          order.status
-                        )}`}
-                      >
-                        {t(`orders.statuses.${order.status}`)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">{order.customer_email}</p>
-                    {order.notes && (
-                      <p className="text-sm text-gray-500 mt-1 italic">
-                        {t('orders.note')}: {order.notes}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary-600">
-                      ${order.total.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Order Items */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    {t('orders.items')} ({order.items.length}):
-                  </p>
-                  <div className="space-y-1">
-                    {order.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded"
-                      >
-                        <span>
-                          {item.product_name || t('products.product')} × {item.quantity}
-                        </span>
-                        <span className="font-medium">
-                          ${item.total.toFixed(2)}
+              <Card key={order.id} className="hover:shadow-lg transition-shadow flex flex-col">
+                <div className="flex-1 min-h-0">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {order.customer_name}
+                        </h3>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
+                            order.status
+                          )}`}
+                        >
+                          {t(`orders.statuses.${order.status}`)}
                         </span>
                       </div>
-                    ))}
+                      <p className="text-sm text-gray-600">{order.customer_email}</p>
+                      {order.notes && (
+                        <p className="text-sm text-gray-500 mt-1 italic">
+                          {t('orders.note')}: {order.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-primary-600">
+                        ${order.total.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      {t('orders.items')} ({order.items.length}):
+                    </p>
+                    <div className="space-y-1">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded"
+                        >
+                          <span>
+                            {item.product_name || t('products.product')} × {item.quantity}
+                          </span>
+                          <span className="font-medium">
+                            ${item.total.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
                   {isAdmin() && (
                     <>
                       <Button
